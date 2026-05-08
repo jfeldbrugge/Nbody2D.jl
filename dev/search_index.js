@@ -1,3 +1,3 @@
 var documenterSearchIndex = {"docs":
-[{"category":"section","location":"#Nbody2D","page":"Home","text":"Documentation for Nbody2D.\n\n","title":"Nbody2D"}]
+[{"category":"section","location":"#Nbody2D","page":"Home","text":"Documentation for Nbody2D.\n\n","title":"Nbody2D"},{"category":"module","location":"#Nbody2D.Nbody2D","page":"Home","text":"A simple two-dimensional N-body code.\n\n\n\n\n\n","title":"Nbody2D.Nbody2D"},{"category":"method","location":"#Nbody2D.GRF-Tuple{Any, Any, Any, Any, Box}","page":"Home","text":"Generate an unconstrained Gaussian random field.\n\n\n\n\n\n","title":"Nbody2D.GRF"},{"category":"method","location":"#Nbody2D.zeldovich-Tuple{Any, Any, Any, Box, Cosmology}","page":"Home","text":"Evaluate the Zel'dovich approximation.\n\n\n\n\n\n","title":"Nbody2D.zeldovich"}]
 }
