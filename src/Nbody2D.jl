@@ -1,10 +1,10 @@
 """
-    A simple two-dimensional N-body code.
+    A simple two-dimensional cosmological N-body code.
 """
 module Nbody2D
-    using QuadGK, FFTW, Random, SpecialFunctions, ProgressMeter
+    using QuadGK, FFTW, Random, SpecialFunctions
 
-    include("Nbody_2D.jl")
+    include("Nbody.jl")
 
-    export Box, Cosmology, GRF, zeldovich, LeapFrog
+    export Box, Cosmology, GRF, Zeldovich, LeapFrog
 end

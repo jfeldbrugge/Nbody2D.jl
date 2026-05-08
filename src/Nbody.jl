@@ -1,7 +1,7 @@
 # Box
-# "Range in frequency space."
-# kRange(n, L) = fftfreq(n) * n * 2. * π / L
-
+"""
+    The cosmological box, setting the volume of the box L^3 and the number of particles N^3.
+"""
 struct Box
     N 
     L 
@@ -20,6 +20,9 @@ struct Box
 end
 
 # Cosmology
+"""
+    The cosmological background in which the N-body simulation runs with the current Hubble rate H0, the matter density OmegaM, dark energy density OmegaL and the curvature component OmegaK.
+"""
 struct Cosmology
     H0
     OmegaM
@@ -37,8 +40,14 @@ struct Cosmology
         growing_mode_norm(H0, OmegaM, OmegaL))
 end
 
+"""
+    The derivative of the scale factor.
+"""
 adot(a, cosmology::Cosmology) = cosmology.H0 * a * sqrt(cosmology.OmegaL + cosmology.OmegaM * a^-3. + cosmology.OmegaK * a^-2.)
 
+"""
+    The growing mode.
+"""
 function growing_mode(a::AbstractFloat, cosmology::Cosmology)
     if a <= 0.001
         return a 
@@ -47,17 +56,25 @@ function growing_mode(a::AbstractFloat, cosmology::Cosmology)
     end
 end
 
+"""
+    The growing mode.
+"""
 function growing_mode(as::Vector, cosmology::Cosmology)
     return [growing_mode(a, cosmology) for a in as]
 end
 
+"""
+    The normalization of the growing mode.
+"""
 function growing_mode_norm(H0, OmegaM, OmegaL)
     adot(a) = H0 * a * sqrt(OmegaL + OmegaM * a^-3. + (1. - OmegaM - OmegaL) * a^-2.)
     return 1. / (adot(1.) * quadgk(b -> adot(b)^-3., 0.00001, 1., rtol=1e-6)[1])
 end
 
 # Gaussian random field
-"Generate an unconstrained Gaussian random field."
+"""
+    Generate an unconstrained Gaussian random field.
+"""
 function GRF(ns, Rs, α, seed, box::Box)
     Random.seed!(seed)
 
@@ -80,6 +97,9 @@ function Grad2(data, i)
     end
 end
 
+"""
+    Two dimensional interpolation.
+"""
 function Interp2D(data, x)
     N = size(data, 1)
     X1 = mod.(floor.(Int, x), N) .+ 1
@@ -95,6 +115,9 @@ function Interp2D(data, x)
     return f1 .* xn[:,1] .* xn[:,2] + f2 .* xm[:,1] .* xn[:,2] + f3 .* xn[:,1] .* xm[:,2] + f4 .* xm[:,1] .* xm[:,2] 
 end
 
+"""
+    Cloud-in-Cell density estimator.
+"""
 function CIC(X, box::Box)
     delta = zeros(box.N, box.N)
     pos = mod.(hcat(vec(X[:,:,1]'), vec(X[:,:,2]')), box.L) ./ box.res
@@ -110,14 +133,19 @@ function CIC(X, box::Box)
 end
 
 # Nbody
+"""
+    The state of the N-body simulation in phase-space.
+"""
 mutable struct State 
     time 
     position
     momentum
 end
 
-"Evaluate the Zel'dovich approximation."
-function zeldovich(phi, a_pos, a_vel, box::Box, cosmology::Cosmology)
+"""
+    Evaluate the Zel'dovich approximation.
+"""
+function Zeldovich(phi, a_pos, a_vel, box::Box, cosmology::Cosmology)
     u_x, u_y = -box.N / box.L .* Grad2(phi, 1), -box.N / box.L .* Grad2(phi, 2)
 
     qRange = range(0. , box.L, box.N + 1)[2:end]
@@ -132,10 +160,16 @@ function zeldovich(phi, a_pos, a_vel, box::Box, cosmology::Cosmology)
     return State(a_pos, X, P)
 end
 
+"""
+    A drift step.
+"""
 function Drift(a, δa, P, cosmology::Cosmology) 
     return δa .* P / (a^2 * adot(a, cosmology))
 end
 
+"""
+    A kick step.
+"""
 function Kick(a, δa, X, box::Box, m, cosmology::Cosmology)
     delta = CIC(X, box) .* m .- 1.
     phi_f = fft(delta) ./ (box.kx.^2 .+ box.ky.^2)
@@ -150,12 +184,14 @@ function Kick(a, δa, X, box::Box, m, cosmology::Cosmology)
     return δa / adot(a, cosmology) .* acc
 end
 
+"""
+    The Leap Frog integrator.
+"""
 function LeapFrog(phi, ai, af, δa, box::Box, cosmology::Cosmology)
     force_box = Box(box.dim, 2 * box.N, box.L)
     mass = (force_box.N / box.N)^box.dim
-    state = zeldovich(phi, ai, ai + δa / 2., box, cosmology)
-    @showprogress for a in ai:δa:af
-        # println("a = ", a)
+    state = Zeldovich(phi, ai, ai + δa / 2., box, cosmology)
+    for a in ai:δa:af
         state.position += Drift(a, δa, state.momentum, cosmology)
         state.momentum -= Kick(a + δa / 2., δa, state.position, force_box, mass, cosmology)
     end
