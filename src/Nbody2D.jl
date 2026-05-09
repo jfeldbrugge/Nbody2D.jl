@@ -3,7 +3,8 @@
 """
 module Nbody2D
     using QuadGK, FFTW, Random, SpecialFunctions
-    using LinearAlgebra, StaticArrays, DelaunayTriangulation, Delaunay
+    using LinearAlgebra, StaticArrays, DelaunayTriangulation
+    # , Delaunay
 
     include("Nbody.jl")
     include("PhaseSpaceDTFE.jl")
