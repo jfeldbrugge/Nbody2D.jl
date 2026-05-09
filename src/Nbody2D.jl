@@ -3,8 +3,11 @@
 """
 module Nbody2D
     using QuadGK, FFTW, Random, SpecialFunctions
+    using LinearAlgebra, StaticArrays, Delaunay
 
     include("Nbody.jl")
+    include("PhaseSpaceDTFE.jl")
 
     export Box, Cosmology, GRF, Zeldovich, LeapFrog
+    export PS_DTFE, ps_density, ps_velocity, numberOfStreams
 end

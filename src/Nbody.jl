@@ -10,13 +10,15 @@ struct Box
     shape 
     kx 
     ky 
+    m
 
     # Box(dim, N, L) = new(N, L, L / N, dim, fill(N, dim), 
     # repeat(kRange(N, L), 1, N), 
     # repeat(kRange(N, L), 1, N)')
-    Box(dim, N, L) = new(N, L, L / N, dim, fill(N, dim), 
+    Box(dim, N, L, m = 1) = new(N, L, L / N, dim, fill(N, dim), 
     repeat(fftfreq(N) * N * 2. * π / L, 1, N), 
-    repeat(fftfreq(N) * N * 2. * π / L, 1, N)')
+    repeat(fftfreq(N) * N * 2. * π / L, 1, N)',
+    m)
 end
 
 # Cosmology
@@ -57,13 +59,6 @@ function growing_mode(a::AbstractFloat, cosmology::Cosmology)
 end
 
 """
-    The growing mode.
-"""
-function growing_mode(as::Vector, cosmology::Cosmology)
-    return [growing_mode(a, cosmology) for a in as]
-end
-
-"""
     The normalization of the growing mode.
 """
 function growing_mode_norm(H0, OmegaM, OmegaL)
@@ -75,7 +70,7 @@ end
 """
     Generate an unconstrained Gaussian random field.
 """
-function GRF(ns, Rs, α, seed, box::Box)
+function GRF(ns, Rs, α, seed, box)
     Random.seed!(seed)
 
     "Power spectrum."
@@ -107,10 +102,10 @@ function Interp2D(data, x)
     xm = mod.(x, 1.)
     xn = 1. .- xm
 
-    f1 = [data[X1[i,1], X1[i,2]] for i in 1:size(X1,1)]
-    f2 = [data[X2[i,1], X1[i,2]] for i in 1:size(X1,1)]
-    f3 = [data[X1[i,1], X2[i,2]] for i in 1:size(X1,1)]
-    f4 = [data[X2[i,1], X2[i,2]] for i in 1:size(X1,1)]
+    f1 = [data[X1[i, 1], X1[i, 2]] for i in axes(X1, 1)]
+    f2 = [data[X2[i, 1], X1[i, 2]] for i in axes(X1, 1)]
+    f3 = [data[X1[i, 1], X2[i, 2]] for i in axes(X1, 1)]
+    f4 = [data[X2[i, 1], X2[i, 2]] for i in axes(X1, 1)]
 
     return f1 .* xn[:,1] .* xn[:,2] + f2 .* xm[:,1] .* xn[:,2] + f3 .* xn[:,1] .* xm[:,2] + f4 .* xm[:,1] .* xm[:,2] 
 end
@@ -118,7 +113,7 @@ end
 """
     Cloud-in-Cell density estimator.
 """
-function CIC(X, box::Box)
+function CIC(X, box)
     delta = zeros(box.N, box.N)
     pos = mod.(hcat(vec(X[:,:,1]'), vec(X[:,:,2]')), box.L) ./ box.res
     for i in 1:size(pos, 1)
@@ -145,7 +140,7 @@ end
 """
     Evaluate the Zel'dovich approximation.
 """
-function Zeldovich(phi, a_pos, a_vel, box::Box, cosmology::Cosmology)
+function Zeldovich(phi, a_pos, a_vel, box, cosmology::Cosmology)
     u_x, u_y = -box.N / box.L .* Grad2(phi, 1), -box.N / box.L .* Grad2(phi, 2)
 
     qRange = range(0. , box.L, box.N + 1)[2:end]
@@ -170,7 +165,7 @@ end
 """
     A kick step.
 """
-function Kick(a, δa, X, box::Box, m, cosmology::Cosmology)
+function Kick(a, δa, X, box, m, cosmology::Cosmology)
     delta = CIC(X, box) .* m .- 1.
     phi_f = fft(delta) ./ (box.kx.^2 .+ box.ky.^2)
     phi_f[1,1] = 0.
@@ -187,7 +182,7 @@ end
 """
     The Leap Frog integrator.
 """
-function LeapFrog(phi, ai, af, δa, box::Box, cosmology::Cosmology)
+function LeapFrog(phi, ai, af, δa, box, cosmology::Cosmology)
     force_box = Box(box.dim, 2 * box.N, box.L)
     mass = (force_box.N / box.N)^box.dim
     state = Zeldovich(phi, ai, ai + δa / 2., box, cosmology)
