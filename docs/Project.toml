@@ -1,3 +1,4 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Nbody2D = "e7818769-3b28-4efa-a321-272a2210d310"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
