@@ -4,7 +4,7 @@ version = "1.0.0-DEV"
 authors = ["Job Feldbrugge <14946916+jfeldbrugge@users.noreply.github.com> and contributors"]
 
 [deps]
-Delaunay = "07eb4e4e-0c6d-46ef-bc4e-83d5e5d860a9"
+DelaunayTriangulation = "927a84f5-c5f4-47a5-9785-b46e178433df"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 QuadGK = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
@@ -13,7 +13,7 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
-Delaunay = "1.2.0"
+DelaunayTriangulation = "1.6.6"
 FFTW = "1.10.0"
 LinearAlgebra = "1.12.0"
 QuadGK = "2.11.3"

@@ -89,7 +89,11 @@ struct PS_DTFE
         velocities          = frame_velocities(positions, velocities, box.L)
         positions_initial, positions = frame(positions_initial, positions, box.L)
 
-        simplices = delaunay(positions_initial).simplices
+        # simplices = delaunay(positions_initial).simplices
+ 
+        points = collect(eachrow(positions_initial))  # or use a vector of tuples
+        tri = triangulate(points)
+        simplices = collect(each_solid_triangle(tri))
 
         dim = size([0 box.L; 0 box.L], 1)
     
