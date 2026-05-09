@@ -14,9 +14,7 @@ let Ni = 2^7, L = 50., H0 = 70., OmegaM = 1.0, OmegaL = 0.
     global box = Box(2, Ni, L)
     global EdS = Cosmology(H0, OmegaM, OmegaL)
 end
-```
 
-```@example tutorial1
 let ns = 2.; Rs = 1.; α = 1.; seed = 1
     global phi = GRF(ns, Rs, α, seed, box)
 end
@@ -35,13 +33,7 @@ zeldovichPlot = plotMesh(stateZeldovich, box)
 stateNbody = LeapFrog(phi, ai, af, δa, box, EdS)
 nbodyPlot = plotMesh(stateNbody, box)
 
-plot(zeldovichPlot, nbodyPlot, size = (1200, 500), legend = false, title=["Zel'dovich" "N-body"])
-
-# plot(zeldovichPlot, nbodyPlot,
-#     size = (1200, 2000),
-#     layout = (2, 1),
-#     legend = false, 
-#     title=["Zel'dovich" "N-body"])
+plot(zeldovichPlot, nbodyPlot, size = (1200, 600), legend = false, title=["Zel'dovich" "N-body"])
 ```
 
 ## Phase-Space Delaunay Tessellation Density Field Estimator
@@ -52,9 +44,7 @@ let depth = 10
     global estimator = PS_DTFE(stateInitial, stateNbody, depth, box)
     nothing
 end
-```
 
-```@example tutorial1
 let 
     global rangeX = 0 : box.L / (8. * box.N) : box.L
     global dens   = [ps_density([x, y], estimator) for y in rangeX, x in rangeX]
@@ -69,10 +59,4 @@ numberPlot = heatmap(rangeX, rangeX, log10.(number), aspect_ratio=:equal)
 plotMesh!(stateNbody, box, :yellow)
 
 plot(densityPlot, numberPlot, size = (1200, 500), legend = false, title=["Density" "Number of streams"])
-
-# # plot(densityPlot, numberPlot,
-#     size = (1200, 2000),
-#     layout = (2, 1),
-#     legend = false, 
-#     title=["Density" "Number of streams"])
 ```
