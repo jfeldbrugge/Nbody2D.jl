@@ -90,10 +90,9 @@ struct PS_DTFE
         positions_initial, positions = frame(positions_initial, positions, box.L)
 
         # simplices = delaunay(positions_initial).simplices
- 
-        points = collect(eachrow(positions_initial))  # or use a vector of tuples
-        tri = triangulate(points)
-        simplices = collect(each_solid_triangle(tri))
+        
+        tri = triangulate(positions_initial')
+        simplices = reduce(vcat, [collect(triangle_vertices(T))' for T in each_solid_triangle(tri)])
 
         dim = size([0 box.L; 0 box.L], 1)
     
