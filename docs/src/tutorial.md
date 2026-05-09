@@ -45,12 +45,9 @@ let depth = 10
     nothing
 end
 
-let 
-    global rangeX = 0 : box.L / (8. * box.N) : box.L
-    global dens   = [ps_density([x, y], estimator) for y in rangeX, x in rangeX]
-    global number = [numberOfStreams([x, y], estimator) for y in rangeX, x in rangeX]
-    nothing
-end
+rangeX = 0 : box.L / (8. * box.N) : box.L
+dens   = [ps_density([x, y], estimator) for y in rangeX, x in rangeX]
+number = [numberOfStreams([x, y], estimator) for y in rangeX, x in rangeX]
 
 densityPlot = heatmap(rangeX, rangeX, log10.(dens), aspect_ratio=:equal)
 plotMesh!(stateNbody, box, :yellow)
