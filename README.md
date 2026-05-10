@@ -5,4 +5,6 @@
 [![Build Status](https://github.com/jfeldbrugge/Nbody2D.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/jfeldbrugge/Nbody2D.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/jfeldbrugge/Nbody2D.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/jfeldbrugge/Nbody2D.jl)
 
-This is a Julia library for running two-dimensional cosmological $N$-body simulations.
+This package is particle mesh code that is inspired by the Johan Hidding's [nbody2d Python code](https://zenodo.org/records/4158731). See [jhidding.github.io/nbody2d](jhidding.github.io/nbody2d) for more details. It serves as a quick environment to learn and experiment with cosmological $N$-body simulations in the two-dimensional setting. Using the package, we can sample initial conditions, evolve the initial perturbations to the current epoch and estimate the density, velocity and number of stream fields.
+
+assets/figures/density.svg
