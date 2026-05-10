@@ -5,7 +5,7 @@ CurrentModule = Nbody2D
 # Nbody2D
 Documentation for [Nbody2D](https://github.com/jfeldbrugge/Nbody2D.jl). This package is particle mesh code in Julia that is inspired by Johan Hidding's [nbody2d Python code](https://zenodo.org/records/4158731) (see [jhidding.github.io/nbody2d](https://jhidding.github.io/nbody2d/) for more details). It serves as a quick environment to learn and experiment with cosmological $N$-body simulations in the two-dimensional setting. Using the package, we can sample initial conditions, evolve the initial perturbations to the current epoch and estimate the density, velocity and number of stream fields.
 
-[![Density and number of stream fields of the Zel'dovich approximation and an $N$-body simulation.](assets/figures/density.svg)](https://jfeldbrugge.github.io/Nbody2D.jl/docs/src/assets/figures/density.svg)
+[![Density and number of stream fields of the Zel'dovich approximation and an $N$-body simulation.](assets/figures/density.svg)](docs/src/assets/figures/density.svg)
 
 ## Installation
 The Nbody2D package can be installed with the Julia package manager.
