@@ -18,7 +18,7 @@ let Ni = 2^7, L = 50., H0 = 70., OmegaM = 1.0, OmegaL = 0.
     global EdS = Cosmology(H0, OmegaM, OmegaL)
 end
 
-# Sample a realization of a Gaussian random field.
+# Sample a realisation of a Gaussian random field.
 let ns = 2.; Rs = 1.; α = 1.; seed = 1
     global phi = GRF(ns, Rs, α, seed, box)
 end
