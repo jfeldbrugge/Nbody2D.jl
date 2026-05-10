@@ -3,6 +3,7 @@ CurrentModule = Nbody2D
 ```
 
 # Citations
+When using this package for scientific research please cite the references below.
 
 ```
 @article{Feldbrugge2024,
@@ -20,12 +21,14 @@ CurrentModule = Nbody2D
     eprint = {https://academic.oup.com/mnras/article-pdf/536/1/807/61019429/stae2627.pdf},
 }
 
-@misc{FeldbruggeHertzsch2025,
-  author = {Feldbrugge, Job},
-  title = {Nbody2D.jl -- Julia implementation of the Phase-Space Delaunay Tessellation Field Estimator},
-  year = {2025},
-  month = {aug},
-  doi = {10.5281/zenodo.16637561},
-  url = {http://dx.doi.org/10.5281/zenodo.16637561}
-} 
+@software{johannes_hidding_2020_4158731,
+  author       = {Johannes Hidding},
+  title        = {jhidding/nbody2d: 2d PM n-body code},
+  month        = oct,
+  year         = 2020,
+  publisher    = {Zenodo},
+  version      = {v0.1.0},
+  doi          = {10.5281/zenodo.4158731},
+  url          = {https://doi.org/10.5281/zenodo.4158731},
+}
 ```
