@@ -3,7 +3,7 @@ CurrentModule = Nbody2D
 ```
 
 # Citations
-When using this package for scientific research please cite 
+When using this package for scientific research, please cite 
 
 ```
 @software{johannes_hidding_2020_4158731,
@@ -18,7 +18,7 @@ When using this package for scientific research please cite
 }
 ```
 
-For the Phase-Space Delaunay Tessellation Field Estimator see 
+For the Phase-Space Delaunay Tessellation Field Estimator, see 
 ```
 @article{Feldbrugge2024,
     author = {Feldbrugge, Job},
