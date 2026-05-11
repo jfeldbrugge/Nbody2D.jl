@@ -6,6 +6,21 @@ CurrentModule = Nbody2D
 When using this package for scientific research, please cite 
 
 ```
+@software{job_feldbrugge_2026_20115154,
+  author       = {Job Feldbrugge},
+  title        = {jfeldbrugge/Nbody2D.jl: Nbody2D.jl},
+  month        = may,
+  year         = 2026,
+  publisher    = {Zenodo},
+  version      = {v1.0.0},
+  doi          = {10.5281/zenodo.20115154},
+  url          = {https://doi.org/10.5281/zenodo.20115154},
+}
+```
+
+and the related Python code
+
+```
 @software{johannes_hidding_2020_4158731,
   author       = {Johannes Hidding},
   title        = {jhidding/nbody2d: 2d PM n-body code},
@@ -19,6 +34,7 @@ When using this package for scientific research, please cite
 ```
 
 For the Phase-Space Delaunay Tessellation Field Estimator, see 
+
 ```
 @article{Feldbrugge2024,
     author = {Feldbrugge, Job},
