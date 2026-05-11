@@ -12,9 +12,6 @@ struct Box
     ky 
     m
 
-    # Box(dim, N, L) = new(N, L, L / N, dim, fill(N, dim), 
-    # repeat(kRange(N, L), 1, N), 
-    # repeat(kRange(N, L), 1, N)')
     Box(dim, N, L, m = 1) = new(N, L, L / N, dim, fill(N, dim), 
     repeat(fftfreq(N) * N * 2. * π / L, 1, N), 
     repeat(fftfreq(N) * N * 2. * π / L, 1, N)',
