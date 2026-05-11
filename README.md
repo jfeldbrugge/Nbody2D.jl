@@ -26,7 +26,23 @@ julia> import Pkg; Pkg.add("Nbody2D")
 ```
 
 ## Usage
-Please have a look at the Tutorial page for details on how to use this package.
+Please have a look at the [Tutorial page](https://jfeldbrugge.github.io/Nbody2D.jl/stable/tutorial/) for details on how to use this package.
+
+## Citation
+When using this package for scientific research, please cite the Zenodo link [DOI:10.5281/zenodo.20115154](https://doi.org/10.5281/zenodo.20115154). You can use the Bibtex entry
+
+```
+@software{job_feldbrugge_2026_20115154,
+  author       = {Job Feldbrugge},
+  title        = {jfeldbrugge/Nbody2D.jl: Nbody2D.jl},
+  month        = may,
+  year         = 2026,
+  publisher    = {Zenodo},
+  version      = {v1.0.0},
+  doi          = {10.5281/zenodo.20115154},
+  url          = {https://doi.org/10.5281/zenodo.20115154},
+}
+```
 
 ## Contributors
 This code was written by:
