@@ -61,8 +61,8 @@ using Test
     lap = laplacian(f, box)
     smo = smooth(f, 1., box)
 
-    @test gra[box.N ÷ 2, box.N ÷ 2, 1] ≈ -1.3114975735196817
-    @test hes[box.N ÷ 2, box.N ÷ 2 , 1] ≈ 0.3349705154191447
+    @test gra[box.N ÷ 2, box.N ÷ 2, 1] ≈ 0.0036668974305495428
+    @test hes[box.N ÷ 2, box.N ÷ 2 , 1] ≈ 0.8255046575403882
     @test lap[box.N ÷ 2, box.N ÷ 2] ≈ 1.1604751729595333
     @test smo[box.N ÷ 2, box.N ÷ 2] ≈ -2.060513408055121
 

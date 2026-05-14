@@ -10,10 +10,11 @@ struct Box
     ky 
     m
 
-    Box(N, L, m = 1) = new(N, L, L / N, 
-    repeat(fftfreq(N) * N * 2. * π / L, 1, N), 
-    repeat(fftfreq(N) * N * 2. * π / L, 1, N)',
-    m)
+    function Box(N, L, m = 1) 
+        k = repeat(fftfreq(N) * N * 2. * π / L, 1, N)
+        return new(N, L, L / N, k', k,m)    
+    end
+    
 end
 
 # Operations on scalar fields represented by 2D arrays

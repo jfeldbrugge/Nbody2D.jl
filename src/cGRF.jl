@@ -19,33 +19,31 @@ struct cGRF
     xi_ij::Matrix{AbstractFloat}
     xi_ij_inv::Matrix{AbstractFloat}
     bases::Array{AbstractFloat, 3}
-end
-
-"Construct the constrained Gaussian random field object."
-function cGRF(box::Box, P, σ, p = [box.L / 2, box.L / 2], ders = [0 0; 1 0; 0 1])
-    ikx, iky = im * box.kx, im * box.ky
-
-    Pk = P.(sqrt.(box.kx.^2 + box.ky.^2))
-    Pk[1, 1] = 0.
-
-    # xd, yd = box.L / 2., box.L / 2.
-    # expIKX = exp.(1im * (box.kx * xd + box.ky * yd))
-    expIKX = exp.(1im * (box.kx * p[1] + box.ky * p[2]))
-    σK = exp.(- σ^2 * (box.kx.^2 + box.ky.^2) / 2.)    
-    Hh = [σK .* expIKX .* ikx.^d[1] .* iky.^d[2] for d in eachrow(ders)]
-
-    xi_i = stack([real(ifft(hi .* Pk)) for hi in Hh] * box.L^-2 * box.N^2 )
-    xi_ij = [real(mean(conj.(hi) .* hj .* Pk)) for hi in Hh, hj in Hh] * box.L^-2 * box.N^2
-    xi_ij_inv = inv(xi_ij)
-
-    bases = zeros(size(ders, 1), box.N, box.N)
-    for i in axes(bases, 1), j in axes(bases, 2), k in axes(bases, 3)
-        for l in axes(xi_ij_inv, 2)
-            bases[i, j, k] += xi_ij_inv[i, l] * xi_i[j, k, l]
+    
+    "Construct the constrained Gaussian random field object."
+    function cGRF(box::Box, P, σ, p = [box.L / 2, box.L / 2], ders = [0 0; 1 0; 0 1])
+        ikx, iky = im * box.kx, im * box.ky
+    
+        Pk = P.(sqrt.(box.kx.^2 + box.ky.^2))
+        Pk[1, 1] = 0.
+    
+        expIKX = exp.(-1im * (box.kx * p[1] + box.ky * p[2]))
+        σK = exp.(- σ^2 * (box.kx.^2 + box.ky.^2) / 2.)    
+        Hh = [σK .* expIKX .* ikx.^d[1] .* iky.^d[2] for d in eachrow(ders)]
+    
+        xi_i = stack([real(ifft(hi .* Pk)) for hi in Hh] * box.L^-2 * box.N^2 )
+        xi_ij = [real(mean(conj.(hi) .* hj .* Pk)) for hi in Hh, hj in Hh] * box.L^-2 * box.N^2
+        xi_ij_inv = inv(xi_ij)
+    
+        bases = zeros(size(ders, 1), box.N, box.N)
+        for i in axes(bases, 1), j in axes(bases, 2), k in axes(bases, 3)
+            for l in axes(xi_ij_inv, 2)
+                bases[i, j, k] += xi_ij_inv[i, l] * xi_i[j, k, l]
+            end
         end
+    
+        return new(Pk, Hh, xi_i, xi_ij, xi_ij_inv, bases)
     end
-
-    return cGRF(Pk, Hh, xi_i, xi_ij, xi_ij_inv, bases)
 end
 
 "Mean of an Array."
