@@ -1,4 +1,4 @@
-using Nbody2D, SpecialFunctions
+using Nbody2D, SpecialFunctions, Plots, VisualRegressionTests
 using Test
 
 @testset "Nbody2D.jl" begin
@@ -21,6 +21,13 @@ using Test
     ai, af, δa = 0.02, 2.02, 0.02
     stateZeldovich = Zeldovich(phi, af, af, box, EdS)
     stateNbody = LeapFrog(phi, ai, af, δa, box, EdS)
+
+    @plottest plotMesh(stateNbody, box) "baseline/testFigure.png" 
+
+    @plottest begin
+        plot()
+        plotMesh!(stateNbody, box) 
+    end "baseline/testFigure.png" 
 
     # Phase-Space Delaunay Tesselation Field Estimator
     let depth = 5
