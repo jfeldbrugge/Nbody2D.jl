@@ -1,23 +1,3 @@
-# Box
-"""
-    The cosmological box, setting the volume of the box L^3 and the number of particles N^3.
-"""
-struct Box
-    N 
-    L 
-    res
-    dim 
-    shape 
-    kx 
-    ky 
-    m
-
-    Box(dim, N, L, m = 1) = new(N, L, L / N, dim, fill(N, dim), 
-    repeat(fftfreq(N) * N * 2. * π / L, 1, N), 
-    repeat(fftfreq(N) * N * 2. * π / L, 1, N)',
-    m)
-end
-
 # Cosmology
 """
     The cosmological background in which the N-body simulation runs with the current Hubble rate H0, the matter density OmegaM, dark energy density OmegaL and the curvature component OmegaK.
@@ -61,50 +41,6 @@ end
 function growing_mode_norm(H0, OmegaM, OmegaL)
     adot(a) = H0 * a * sqrt(OmegaL + OmegaM * a^-3. + (1. - OmegaM - OmegaL) * a^-2.)
     return 1. / (adot(1.) * quadgk(b -> adot(b)^-3., 0.00001, 1., rtol=1e-6)[1])
-end
-
-# Gaussian random field
-"""
-    Generate an unconstrained Gaussian random field.
-"""
-function GRF(ns, Rs, α, seed, box)
-    Random.seed!(seed)
-
-    "Power spectrum."
-    function P(k, ns, Rs, α)
-        return α^2 * 4. * π * Rs^(2. + ns) / gamma(1. + ns / 2.) * k^(ns - 4.) * exp(-Rs^2 * k^2)
-    end
-
-    Pk = P.(sqrt.(box.kx.^2 + box.ky.^2), ns, Rs, α)
-    Pk[1, 1] = 0.
-    return real(ifft(sqrt.(Pk) .* fft(randn(box.N, box.N)))) * box.N^(2/2) / box.L^(2/2)
-end
-
-# Utility functions
-function Grad2(data, i) 
-    if i == 1
-        return 1. / 12. .* circshift(data, (2,0)) - 2. / 3. .* circshift(data, (1,0)) + 2. / 3. .* circshift(data, (-1,0)) -  1. / 12. .* circshift(data, (-2,0)) 
-    else i == 2
-        return 1. / 12. .* circshift(data, (0,2)) - 2. / 3. .* circshift(data, (0,1)) + 2. / 3. .* circshift(data, (0,-1)) -  1. / 12. .* circshift(data, (0,-2)) 
-    end
-end
-
-"""
-    Two dimensional interpolation.
-"""
-function Interp2D(data, x)
-    N = size(data, 1)
-    X1 = mod.(floor.(Int, x), N) .+ 1
-    X2 = mod.(ceil.(Int, x),  N) .+ 1
-    xm = mod.(x, 1.)
-    xn = 1. .- xm
-
-    f1 = [data[X1[i, 1], X1[i, 2]] for i in axes(X1, 1)]
-    f2 = [data[X2[i, 1], X1[i, 2]] for i in axes(X1, 1)]
-    f3 = [data[X1[i, 1], X2[i, 2]] for i in axes(X1, 1)]
-    f4 = [data[X2[i, 1], X2[i, 2]] for i in axes(X1, 1)]
-
-    return f1 .* xn[:,1] .* xn[:,2] + f2 .* xm[:,1] .* xn[:,2] + f3 .* xn[:,1] .* xm[:,2] + f4 .* xm[:,1] .* xm[:,2] 
 end
 
 """
@@ -180,8 +116,8 @@ end
     The Leap Frog integrator.
 """
 function LeapFrog(phi, ai, af, δa, box, cosmology::Cosmology)
-    force_box = Box(box.dim, 2 * box.N, box.L)
-    mass = (force_box.N / box.N)^box.dim
+    force_box = Box(2 * box.N, box.L)
+    mass = (force_box.N / box.N)^2
     state = Zeldovich(phi, ai, ai + δa / 2., box, cosmology)
     for a in ai:δa:af
         state.position += Drift(a, δa, state.momentum, cosmology)

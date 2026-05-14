@@ -1,16 +1,21 @@
-using Nbody2D
+using Nbody2D, SpecialFunctions
 using Test
 
 @testset "Nbody2D.jl" begin
     println("Start test.")
 
     let Ni = 2^5, L = 50., H0 = 70., OmegaM = 1.0, OmegaL = 0.
-        global box = Box(2, Ni, L)
+        global box = Box(Ni, L)
         global EdS = Cosmology(H0, OmegaM, OmegaL)
     end
 
-    let ns = 2.; Rs = 1.; α = 1.; seed = 1
-        global phi = GRF(ns, Rs, α, seed, box)
+    "Power spectrum."
+    function P(k, ns, Rs, α)
+        return α^2 * 4. * π * Rs^(2. + ns) / gamma(1. + ns / 2.) * k^(ns - 4.) * exp(-Rs^2 * k^2)
+    end
+
+    let ns = 2., Rs = 1., α = 1., seed = 1
+        global phi = GRF(k -> P(k, ns, Rs, α), seed, box)
     end
 
     ai, af, δa = 0.02, 2.02, 0.02

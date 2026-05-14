@@ -80,9 +80,9 @@ struct PS_DTFE
 
     function PS_DTFE(state_initial, state_final, depth, box)
         m = box.m
-        positions_initial = reshape(state_initial.position, :, box.dim)
-        positions = reshape(state_final.position, :, box.dim)
-        velocities = reshape(state_final.momentum, :, box.dim)
+        positions_initial = reshape(state_initial.position, :, 2)
+        positions = reshape(state_final.position, :, 2)
+        velocities = reshape(state_final.momentum, :, 2)
 
         positions = unwrap_x_(positions_initial, positions, box.L);
         positions_initial, positions = translate(positions_initial, positions, box.L)
