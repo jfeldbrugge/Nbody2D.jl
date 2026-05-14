@@ -36,5 +36,16 @@ using Test
     # @test ps_velocity(p, estimatorZeldovich) ≈ [-1.759013770242557 -0.09413530535089731]
     @test numberOfStreams(p, estimatorZeldovich) == 1
 
+    let ns = 2., Rs = 1., α = 1., seed = 1, σ = 1., ders = [0 0; 1 0; 0 1]
+        global cgrf = cGRF(box, k -> P(k, ns, Rs, α), σ, ders)
+        c = [1, 0, 0]
+        global (f, f_c) = constraintGRF(c, seed, cgrf, box)
+        global f_var = varianceField(cgrf)
+    end
+    mc = measureConstraints(f_c, cgrf)
+    @test mc[1] ≈ 1
+
+
+
     println("Finish test.")
 end
