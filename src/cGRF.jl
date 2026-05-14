@@ -22,14 +22,15 @@ struct cGRF
 end
 
 "Construct the constrained Gaussian random field object."
-function cGRF(box::Box, P, σ, ders = [0 0; 1 0; 0 1])
+function cGRF(box::Box, P, σ, p = [box.L / 2, box.L / 2], ders = [0 0; 1 0; 0 1])
     ikx, iky = im * box.kx, im * box.ky
 
     Pk = P.(sqrt.(box.kx.^2 + box.ky.^2))
     Pk[1, 1] = 0.
 
-    xd, yd = box.L / 2., box.L / 2.
-    expIKX = exp.(1im * (box.kx * xd + box.ky * yd))
+    # xd, yd = box.L / 2., box.L / 2.
+    # expIKX = exp.(1im * (box.kx * xd + box.ky * yd))
+    expIKX = exp.(1im * (box.kx * p[1] + box.ky * p[2]))
     σK = exp.(- σ^2 * (box.kx.^2 + box.ky.^2) / 2.)    
     Hh = [σK .* expIKX .* ikx.^d[1] .* iky.^d[2] for d in eachrow(ders)]
 

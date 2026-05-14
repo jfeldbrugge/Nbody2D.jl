@@ -7,7 +7,7 @@ CurrentModule = Nbody2D
 In this tutorial, we demonstrate the usage of the *Nbody2D.jl*. 
 
 ## Cosmology and initial conditions
-We set the cosmological background in which the $N$-body simulation operates and sample a Gaussian random field to create initial conditions for the $N$-body simulation.
+We set the cosmological background in which the $N$-body simulation operates and sample a Gaussian random field to create initial conditions for the $N$-body simulation. We can either sample the initial conditions from an unconstrained Gaussian random field
 
 ```@example tutorial1
 using Nbody2D, Plots, SpecialFunctions
@@ -34,6 +34,30 @@ heatmap(qRange, qRange, phi,
         aspect_ratio=:equal, 
         xlims=(0, box.L), ylims=(0, box.L), 
         title="Displacement potential")
+```
+
+or add constraints on the derivatives of the (smoothed) Gaussian random field in a point. In the example below, we constrain the function value and set the first-order derivatives of the Gaussian smoothed initial conditions at the centre of the box.
+
+```@example tutorial1
+    let ns = 2., Rs = 1., α = 1., seed = 1, σ = 1., p = [box.L / 2, box.L / 2], ders = [0 0; 1 0; 0 1]
+        global cgrf = cGRF(box, k -> P(k, ns, Rs, α), σ, p, ders)
+        c = [1, 0, 0]
+        global (f, f_c) = constraintGRF(c, seed, cgrf, box)
+        global f_var = varianceField(cgrf)
+   
+        pl_f     = heatmap(range(0, box.L, box.N), range(0, box.L, box.N), f',     aspect_ratio=:equal, xlims=(0, box.L), ylims=(0, box.L), title = "Unconstrained GRF")
+        pl_f_c   = heatmap(range(0, box.L, box.N), range(0, box.L, box.N), f_c',   aspect_ratio=:equal, xlims=(0, box.L), ylims=(0, box.L), title = "Constrained GRF")
+        pl_f_mean = heatmap(range(0, box.L, box.N), range(0, box.L, box.N), meanField(c, cgrf)', aspect_ratio=:equal, xlims=(0, box.L), ylims=(0, box.L), title = "Mean field")
+        pl_f_var = heatmap(range(0, box.L, box.N), range(0, box.L, box.N), f_var', aspect_ratio=:equal, xlims=(0, box.L), ylims=(0, box.L), title = "Variance of the residue")
+        plot(pl_f, pl_f_c, pl_f_mean, pl_f_var, layout = grid(2, 2), size=(1000, 800))
+    end
+```
+
+The constrained realization satisfies the constraints
+
+```@example tutorial1
+    @show measureConstraints(f, cgrf)
+    @show measureConstraints(f_c, cgrf)
 ```
 
 ## N-body simulation
