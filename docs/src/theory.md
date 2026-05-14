@@ -5,16 +5,7 @@ CurrentModule = Nbody2D
 # Theory
 We give a brief theoretical description of large-scale structure formation to provide a foundation for this package. We discuss the initial conditions, the evolution of the initial conditions into the cosmic web and the Phase-Space Delaunay Tessellation Field Estimator. [To be extended in a future version.]
 
-## Initial conditions 
-This package implements the initial conditions as a realisation of a Gaussian random field. In particular, we model the primordial displacement potential with a Gaussian random field governed by the power-law power spectrum smoothed with a Gaussian filter
-
-```math
-P_\phi(k) = \frac{α^2  4 \pi R_s^{2 + n_s}}{\Gamma\left(1 + \frac{n_s}{2}\right)}  k^{n_s - 4}  e^{-R_s^2  k^2}\,,
-```
-
-with the spectral index $n_s$, the smoothing length $R_s$, and normalization constant $\alpha$.
-
-## Structure formation
+## Cosmology
 In this code, we perform a two-dimensional cosmological $N$-body simulation, where we solve Newton's equations for gravity on an expanding cosmological background.
 
 In a homogenous and isotropic Friedmann–Lemaître–Robertson–Walker universe, the Einstein Field equations reduce to the Friedmann equation
@@ -25,6 +16,17 @@ H(t)^2 = \left(\frac{\dot{a}(t)}{a(t)}\right)^2 = H_0^2\left( \frac{\Omega_{0, r
 
 with the scale factor $a(t)$ describes the expansion history of our Universe as a function of time $t$ spanning the Big Bang $a=0$ to the current time $a(t_0)=1$. The Friedmann equation expression the Hubble factor $H=\frac{\dot{a}}{a}$ capturing the expansion of our Universe as a function of the current Hubble expansion rate $H_0$, the scale factor $a$, the current radiation density parameter $\Omega_{0,r}$, the current matter density parameter $\Omega_{0,m}$, the current curvature parameter $\Omega_{0,k}$ and the dark energy parameter $\Omega_{0,\Lambda}$.
 
+## Initial conditions 
+This package implements the initial conditions as a realisation of a Gaussian random field. In particular, we model the primordial displacement potential with a Gaussian random field governed by the power-law power spectrum smoothed with a Gaussian filter
+
+```math
+P_\phi(k) = \frac{α^2  4 \pi R_s^{2 + n_s}}{\Gamma\left(1 + \frac{n_s}{2}\right)}  k^{n_s - 4}  e^{-R_s^2  k^2}\,,
+```
+
+with the spectral index $n_s$, the smoothing length $R_s$, and normalization constant $\alpha$.
+
+
+## Structure formation
 In large-scale structure formation, the cosmic forms due to the gravitational collapse of small, close to Gaussian fluctuations. In an expanding universe, the gravitational potential $\phi$ is governed by the Poisson equation on an expanding background 
 
 ```math
