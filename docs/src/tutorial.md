@@ -53,10 +53,9 @@ or add constraints on the derivatives of the (smoothed) Gaussian random field in
     end
 ```
 
-The constrained realization satisfies the constraints
+The constrained realization satisfies the constraints, corresponding to a critical point at function value $1$,
 
 ```@example tutorial1
-    @show measureConstraints(f, cgrf)
     @show measureConstraints(f_c, cgrf)
 ```
 
