@@ -5,8 +5,12 @@ CurrentModule = Nbody2D
 # Nbody2D
 Documentation for [Nbody2D](https://github.com/jfeldbrugge/Nbody2D.jl). This package is particle mesh code in Julia that is inspired by Johan Hidding's [nbody2d](https://zenodo.org/records/4158731) Python code (see [jhidding.github.io/nbody2d](https://jhidding.github.io/nbody2d/) for more details). It serves as a quick environment to learn and experiment with cosmological $N$-body simulations in the two-dimensional setting. This enables one to quickly develop intuition. 
 
-With this package, you (i) can sample initial conditions, (ii) evolve the initial perturbations to the current epoch and (iii) estimate the density, velocity and number of stream fields.
+Using the package:
 
+* We create initial conditions by sampling both unconstrained and constrained Gaussian random fields.
+* We evolve the initial perturbations to the current epoch.
+* We estimate the density, velocity and number of stream fields using the Phase-Space Delaunay Tessellation Field Estimator.
+  
 [![Density and number of stream fields of the Zel'dovich approximation and an $N$-body simulation.](assets/figures/density.png)](https://github.com/jfeldbrugge/Nbody2D.jl/blob/main/docs/src/assets/figures/density.svg)
 
 

@@ -9,7 +9,7 @@ In this tutorial, we demonstrate the usage of the *Nbody2D.jl*.
 ## Cosmology and initial conditions
 We set the cosmological background in which the $N$-body simulation operates and sample a Gaussian random field to create initial conditions for the $N$-body simulation. We can sample the initial conditions from an unconstrained Gaussian random field
 
-```@example tutorial1
+```@example tutorial
 using Nbody2D, Plots, SpecialFunctions
 
 # Set the simulation box and cosmological model.
@@ -38,7 +38,7 @@ heatmap(qRange, qRange, phi,
 
 Alternatively, we add constraints on the derivatives of the (smoothed) Gaussian random field in a point. In the example below, we constrain the function value and set the first-order derivatives of the Gaussian smoothed initial conditions at the centre of the box.
 
-```@example tutorial1
+```@example tutorial
     let ns = 2., Rs = 1., α = 1., seed = 1, σ = 1., p = [box.L / 2, box.L / 2], ders = [0 0; 1 0; 0 1]
         global cgrf = cGRF(box, k -> P(k, ns, Rs, α), σ, p, ders)
         c = [1, 0, 0]
@@ -59,14 +59,14 @@ Alternatively, we add constraints on the derivatives of the (smoothed) Gaussian 
 
 The constrained realization satisfies the constraints, corresponding to a critical point at function value $1$,
 
-```@example tutorial1
+```@example tutorial
     @show measureConstraints(f_c, cgrf)
 ```
 
 ## N-body simulation
 Given the initial conditions, we evolve the $N$-body particles with both the Zel'dovich approximation and an $N$-body simulation.
 
-```@example tutorial1
+```@example tutorial
 ai, af, δa = 0.02, 2.02, 0.02
 
 # Zel'dovich approximation
@@ -85,7 +85,7 @@ plot(zeldovichPlot, nbodyPlot, size = (1200, 600), legend = false,
 ## Phase-Space Delaunay Tessellation Density Field Estimator
 We evaluate the density, velocity and number of stream fields with the Phase-Space Delaunay Tessellation Density Field Estimator (PS-DTFE).
 
-```@example tutorial1
+```@example tutorial
 # Build PS-DTFE estimators.
 let depth = 10
     stateInitial = Zeldovich(phi, δa, δa, box, EdS)

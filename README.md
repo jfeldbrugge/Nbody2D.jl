@@ -6,7 +6,11 @@
 [![Coverage](https://codecov.io/gh/jfeldbrugge/Nbody2D.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/jfeldbrugge/Nbody2D.jl)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20115154.svg)](https://doi.org/10.5281/zenodo.20115154)
 
-This package is a particle mesh code that is inspired by Johan Hidding's [nbody2d](https://zenodo.org/records/4158731) Python code. See [jhidding.github.io/nbody2d](jhidding.github.io/nbody2d) for more details. It serves as a quick environment to learn and experiment with cosmological $N$-body simulations in the two-dimensional setting. Using the package, we can sample initial conditions, evolve the initial perturbations to the current epoch and estimate the density, velocity and number of stream fields.
+This package is a particle mesh code that is inspired by Johan Hidding's [nbody2d](https://zenodo.org/records/4158731) Python code. See [jhidding.github.io/nbody2d](jhidding.github.io/nbody2d) for more details. It serves as a quick environment to learn and experiment with cosmological $N$-body simulations in the two-dimensional setting. Using the package:
+
+* We create initial conditions by sampling both unconstrained and constrained Gaussian random fields.
+* We evolve the initial perturbations to the current epoch.
+* We estimate the density, velocity and number of stream fields using the Phase-Space Delaunay Tessellation Field Estimator.
 
 
 [![Density and number of stream fields of the Zel'dovich approximation and an $N$-body simulation.](docs/src/assets/figures/density.png)](docs/src/assets/figures/density.svg)
