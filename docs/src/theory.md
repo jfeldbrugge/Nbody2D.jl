@@ -115,8 +115,7 @@ P_\phi(k) = \frac{α^2  4 \pi R_s^{2 + n_s}}{\Gamma\left(1 + \frac{n_s}{2}\right
 
 with the spectral index $n_s,$ the smoothing length $R_s,$ and normalization constant $\alpha.$
 
-
-#### Generating realisations
+#### Sampling initial conditions
 In the discussion above, we observe that Gaussian random fields are most easily expressed in Fourier space as the exponent of the distribution is diagonal in $\hat{\delta}.$  Generating an unconstrained realization of a Gaussian random field on a regular lattice $\{ \bm{q}_{i_1,\dots,i_d}\},$ with the values $\delta_{i_1,\dots,i_d} = \delta(\bm{q}_{i_1,\dots,i_d}),$ reduces to sampling the normally distributed Fourier modes $\hat{\delta}_{i_1,\dots,i_d}$ and a single Fast Fourier transform.
 
 When studying the formation of a specific geometric feature in the cosmic web, it is convenient to sample the initial conditions subject to linear constraints
