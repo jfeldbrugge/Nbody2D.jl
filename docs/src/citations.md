@@ -92,7 +92,7 @@ archivePrefix = {arXiv},
 }
 ```
 
-For more information about Phase-Space Delaunay Tessellation Field Estimator, see 
+For more information about the Phase-Space Delaunay Tessellation Field Estimator, see 
 
 ```
 @article{Feldbrugge:2024,
