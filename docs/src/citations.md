@@ -87,9 +87,6 @@ archivePrefix = {arXiv},
        adsurl = {https://ui.adsabs.harvard.edu/abs/2023JCAP...02..058F},
       adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
-
-
-
 ```
 
 For more information about cosmological particle mesh codes, see 
