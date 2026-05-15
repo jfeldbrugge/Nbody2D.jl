@@ -5,9 +5,9 @@ CurrentModule = Nbody2D
 # Theory
 We give a brief theoretical description of large-scale structure formation to provide a foundation for this package. 
 
-* We create initial conditions by sampling both an unconstrained and a constrained Gaussian random field
-* We evolve the initial conditions into the cosmic web with an $N$-body simulation
-* We evaluate the density, velocity and number of stream fields with the Phase-Space Delaunay Tessellation Field Estimator. 
+* We review how to obtain initial conditions by sampling both an unconstrained and a constrained Gaussian random field
+* We discuss how to evolve these initial conditions into the cosmic web with an $N$-body simulation
+* Finally, we discuss how we evaluate the density, velocity and number of stream fields with the Phase-Space Delaunay Tessellation Field Estimator. 
 
 For an introduction to cosmology and large-scale structure formation, we refer to [Introduction to Cosmology by Barbara Ryden](https://www.cambridge.org/gb/universitypress/subjects/physics/cosmology-relativity-and-gravitation/introduction-cosmology-2nd-edition-1?format=HB&isbn=9781107154834). For more information on Gaussian random field theory and the Phase-Space Delaunay Tessellation Field Estimator see this [introduction](https://jfeldbrugge.github.io/Gaussian-Random-Field/) and the [PhaseSpaceDTFE.jl](https://jfeldbrugge.github.io/PhaseSpaceDTFE.jl/stable/theory/) package.
 
@@ -198,13 +198,13 @@ F = \tilde{\delta} - \xi_i(\bm{q}) \xi_{ij}^{-1} \tilde{c}_j.
 * Add the residue $F$ to the mean field $\bar{\delta}$ to obtain the constrained realization
 $$\delta = F + \xi_i(\bm{q}) \xi_{ij}^{-1} c_j.$$
 
-with the correlation functions
+with the correlation function of the random field with the constraints
 
 ```math
 \xi_i(\bm{q}) = \langle \delta(\bm{q}) C_i(\bm{q}_i)\rangle\,,
 ```
 
-and 
+and the auto correlation function of the constraints
 
 ```math
 \xi_{ij} = \langle C_i(\bm{q}_i)C_j(\bm{q}_j)\rangle\,.
