@@ -118,5 +118,5 @@ plotMesh!(stateNbody, box, :yellow)
 
 plot(densityZeldovichPlot, numberZeldovichPlot, densityNbodyPlot, numberNbodyPlot, 
      size = (1200, 1000), legend = false, 
-     title=["Density Zeldovich" "Number of streams Zeldovich" "Density N-body" "Number of streams N-body"])
+     title=["Density Zel'dovich" "Number of streams Zel'dovich" "Density N-body" "Number of streams N-body"])
 ```
