@@ -9,7 +9,7 @@ We give a brief theoretical description of large-scale structure formation to pr
 * We evolve the initial conditions into the cosmic web with an $N$-body simulation
 * We evaluate the density, velocity and number of stream fields with the Phase-Space Delaunay Tessellation Field Estimator. 
 
-For a detailed review of cosmology and large-scale structure formation, we refer to [Introduction to Cosmology by Barbara Ryden](https://www.cambridge.org/gb/universitypress/subjects/physics/cosmology-relativity-and-gravitation/introduction-cosmology-2nd-edition-1?format=HB&isbn=9781107154834). For a more detailed introduction into Gaussian random field theory, see this [introduction to Gaussian random field theory](https://jfeldbrugge.github.io/Gaussian-Random-Field/). For more details on the Phase-Space Delaunay Tessellation Field Estimator see [PhaseSpaceDTFE.jl](https://jfeldbrugge.github.io/PhaseSpaceDTFE.jl/stable/theory/).
+For a detailed review of cosmology and large-scale structure formation, we refer to [Introduction to Cosmology by Barbara Ryden](https://www.cambridge.org/gb/universitypress/subjects/physics/cosmology-relativity-and-gravitation/introduction-cosmology-2nd-edition-1?format=HB&isbn=9781107154834). For a more detailed introduction to Gaussian random field theory, see this [introduction to Gaussian random field theory](https://jfeldbrugge.github.io/Gaussian-Random-Field/). For more details on the Phase-Space Delaunay Tessellation Field Estimator, see [PhaseSpaceDTFE.jl](https://jfeldbrugge.github.io/PhaseSpaceDTFE.jl/stable/theory/).
 
 ## Cosmology
 Einstein's theory of gravitation turned our Universe into a dynamical object. Space-time expands and contracts as a function of its energy content.
@@ -34,10 +34,10 @@ Gaussian random fields occur on many branches of physics but are in particular c
 \delta(\bm{q}) = \frac{\rho(\bm{q})}{\bar{\rho}} - 1
 ```
 
-with the energy density $\rho$ and the mean density $\bar{\rho}$, observable in the cosmic microwave background radiation field. After the epoch of recombination, these fluctuations gravitationally collapse to form the cosmic structure we observe today in cosmological redshift surveys. The seed for the structure in our universe turns out to be very close to a realization of a Gaussian random field with a near scale invariant power spectrum. I will here summarize a number of key techniques and results in Gaussian random field theory.
+with the energy density $\rho$ and the mean density $\bar{\rho}$, observable in the cosmic microwave background radiation field. After the epoch of recombination, these fluctuations gravitationally collapse to form the cosmic structure we observe today in cosmological redshift surveys. The seed for the structure in our universe turns out to be very close to a realisation of a Gaussian random field with a near scale-invariant power spectrum. I will here summarise a number of key techniques and results in Gaussian random field theory.
 
 ### Gaussian random fields
-Theories for origin of our universe, describe the density perturbation $\delta:\mathbb{R}^d \to \mathbb{R}$ on the space $\mathbb{R}^d$ in terms of random fields. Instead of predicting a particular distribution of the energy in the early universe, the theories describe its statistical properties. We will here restrict attention to initial density fluctuations considered as a realization of a Gaussian random field.
+Theories for the origin of our Universe describe the density perturbation $\delta:\mathbb{R}^d \to \mathbb{R}$ on the space $\mathbb{R}^d$ in terms of random fields. Instead of predicting a particular distribution of the energy in the early universe, the theories describe its statistical properties. We will here restrict attention to initial density fluctuations considered as a realisation of a Gaussian random field.
 
 [.Gaussian Random Field![Gaussian Random field](assets/figures/GRF.png)](https://github.com/jfeldbrugge/Nbody2D.jl/blob/main/docs/src/assets/figures/GRF.png)
 
@@ -46,11 +46,11 @@ First, note that the density perturbation has zero mean
 ```math
 \langle \delta \rangle = \langle \rho(\bm{q}) \rangle / \bar{\rho} - 1 =0.
 ```
-When $\delta$ is a realization of a stationary Gaussian random field, the density perturbation at a point $\delta(\bm{q})$ is normally distributed. The spatial correlations are fully charaterized by the two-point correlation function
+When $\delta$ is a realisation of a stationary Gaussian random field, the density perturbation at a point $\delta(\bm{q})$ is normally distributed. The spatial correlations are fully characterised by the two-point correlation function
 ```math
 \xi(\bm{q}_1,\bm{q}_2) = \langle \delta(\bm{q}_1) \delta(\bm{q}_2) \rangle.
 ```
-As it turns out, a random field with a Gaussian PDF with zero mean, which is fully charaterized by its two-point correlation function $\xi(\bm{q}_1,\bm{q}_2)$, is uniquely described by the Gaussian distribution
+As it turns out, a random field with a Gaussian PDF with zero mean, which is fully characterised by its two-point correlation function $\xi(\bm{q}_1,\bm{q}_2)$, is uniquely described by the Gaussian distribution
 ```math
 p(\delta)   = e^{-\frac{1}{2} \iint \delta(\bm{q}_1) K(\bm{q}_1,\bm{q}_2) \delta(\bm{q}_2)\mathrm{d}\bm{q}_1\mathrm{d}\bm{q}_2},
 ```
@@ -67,7 +67,7 @@ with $\mathcal{D}\delta$ the path integral measure. The expectation value of som
 \langle Q[\delta] \rangle = \int Q[\delta] e^{-\frac{1}{2} \iint \delta(\bm{q}_1)K(\bm{q}_1,\bm{q}_2) \delta(\bm{q}_2)\mathrm{d}\bm{q}_1 \mathrm{d}\bm{q}_2} \mathcal{D}\delta.
 ```
 
-It follows from the cosmological principle that the initial conditions of our universe are statistically *homogeneous* (all points are statistically equivalent) and statistically *isotripic* (all directions are statistically equivalent). By the homogeneity and isotropy, the two-point correlation function to only depend on the distance between the points,
+It follows from the cosmological principle that the initial conditions of our universe are statistically *homogeneous* (all points are statistically equivalent) and statistically *isotropic* (all directions are statistically equivalent). Due to the homogeneity and isotropy, the two-point correlation function only depends on the distance between the points,
 
 ```math
 \xi(\bm{q}_1,\bm{q}_2) = \xi(\|\bm{q}_1-\bm{q}_2\|).
@@ -113,8 +113,8 @@ P_\phi(k) = \frac{α^2  4 \pi R_s^{2 + n_s}}{\Gamma\left(1 + \frac{n_s}{2}\right
 with the spectral index $n_s$, the smoothing length $R_s$, and normalization constant $\alpha$.
 
 
-### Generating realizations
-In the analysis above, we observe that Gaussian random fields are most easily expressed in terms of Fourier space as the exponent of the distribution is diagonal in $\hat{\delta}$.  Generating an unconstrained realization of a Gaussian random field on a regular lattice $\{ \bm{q}_{i_1,\dots,i_d}\}$, with the values $\delta_{i_1,\dots,i_d} = \delta(\bm{q}_{i_1,\dots,i_d})$, reduces to sampling the normally distributed Fourier modes $\hat{\delta}_{i_1,\dots,i_d}$. The realization of the Gaussian random field in real space is obtained with a fast Fourier transform. 
+### Generating realisations
+In the analysis above, we observe that Gaussian random fields are most easily expressed in terms of Fourier space as the exponent of the distribution is diagonal in $\hat{\delta}$.  Generating an unconstrained realization of a Gaussian random field on a regular lattice $\{ \bm{q}_{i_1,\dots,i_d}\}$, with the values $\delta_{i_1,\dots,i_d} = \delta(\bm{q}_{i_1,\dots,i_d})$, reduces to sampling the normally distributed Fourier modes $\hat{\delta}_{i_1,\dots,i_d}$. The realisation of the Gaussian random field in real space is obtained with a fast Fourier transform. 
 
 When studying the formation of a specific geometric feature in the cosmic web, it is convenient to sample initial conditions subject to a set of constraints. We here use the Hoffman-Ribak. We first define the set of $M$ linear constraints
 
@@ -134,13 +134,13 @@ a derivative
 C[\delta;\bm{q}_i] = \frac{\partial \delta}{\partial q_i} (\bm{q}_i),
 ```
 
-or a more generally a convolution with some kernel $g$,
+or more generally, a convolution with some kernel $g$,
 
 ```math
 C[\delta;\bm{q}_i] = \int g(\bm{q}_i - \bm{q})\delta(\bm{q}) \mathrm{d}\bm{q}.
 ```
 
-Now using Bayes formula, we write the conditional distribution
+Now, using Bayes formula, we write the conditional distribution
 ```math
 p(\delta|\Gamma) = \frac{p(\delta, \Gamma)}{p(\Gamma)} = \frac{p(\delta)}{p(\Gamma)},
 ```
@@ -231,7 +231,7 @@ the Poisson and Euler equations assume the form
 \end{align*}
 ```
 
-In these equations, the time dependence enters through the evolution of the scale factor. When the scale factor $a$ is a monotonically increasing function, it is natural to parametrize time in terms of the scale factor and express the equations of motion as 
+In these equations, the time dependence enters through the evolution of the scale factor. When the scale factor $a$ is a monotonically increasing function, it is natural to parametrise time in terms of the scale factor and express the equations of motion as 
 
 ```math
 \begin{align*}
