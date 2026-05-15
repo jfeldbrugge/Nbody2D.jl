@@ -6,7 +6,7 @@ CurrentModule = Nbody2D
 When using this package for scientific research, please cite 
 
 ```
-@software{job_feldbrugge_2026_20115154,
+@software{Feldbrugge:2026,
   author       = {Job Feldbrugge},
   title        = {jfeldbrugge/Nbody2D.jl: Nbody2D.jl},
   month        = may,
@@ -21,7 +21,7 @@ When using this package for scientific research, please cite
 and the related Python code
 
 ```
-@software{johannes_hidding_2020_4158731,
+@software{Hidding:2020,
   author       = {Johannes Hidding},
   title        = {jhidding/nbody2d: 2d PM n-body code},
   month        = oct,
@@ -68,6 +68,27 @@ archivePrefix = {arXiv},
        adsurl = {https://ui.adsabs.harvard.edu/abs/1996MNRAS.281...84V},
       adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
+
+@ARTICLE{Feldbrugge:2023,
+       author = {{Feldbrugge}, Job and {van de Weygaert}, Rien},
+        title = "{Cosmic web \& caustic skeleton: non-linear constrained realizations - 2D case studies}",
+      journal = {\jcap},
+     keywords = {cosmic web, cosmological simulations, dark matter simulations, Statistical sampling techniques, Astrophysics - Cosmology and Nongalactic Astrophysics, General Relativity and Quantum Cosmology},
+         year = 2023,
+        month = feb,
+       volume = {2023},
+       number = {2},
+          eid = {058},
+        pages = {058},
+          doi = {10.1088/1475-7516/2023/02/058},
+archivePrefix = {arXiv},
+       eprint = {2212.07840},
+ primaryClass = {astro-ph.CO},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2023JCAP...02..058F},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+
 
 ```
 

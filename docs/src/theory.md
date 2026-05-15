@@ -92,7 +92,7 @@ the two-point correlation function of the Fourier modes is diagonal
 =(2\pi)^d \delta_D^{(d)}(\bm{k}_1-\bm{k}_2) P(\|\bm{k}_1\|),
 ```
 
-with the change of coordinates $\bm{r} = \bm{q}_1-\bm{q}_2$ and $\bm{q}=\bm{q}_2$ and where the *power spectrum* $P(k)$ describes the amplitude corresponding to Fourier modes. The power spectrum is the Fourier transform of the correlation function
+where the *power spectrum* $P(k)$ is the Fourier transform of the correlation function
 
 ```math
 P(k) = \int e^{i \bm{k} \cdot \bm{r} } \xi(\|\bm{r}\|) \mathrm{d}\bm{r}\,.
