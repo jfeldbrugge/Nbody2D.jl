@@ -28,20 +28,17 @@ The Friedmann equation describes the expansion history of our Universe through t
 [![Scale factor](assets/figures/scalefactor.png)](https://github.com/jfeldbrugge/Nbody2D.jl/blob/main/docs/src/assets/figures/scalefactor.png)
 
 ## Initial conditions 
-Gaussian random fields are crucial to modern cosmology as theories for the early universe predict a nearly homogeneous and isotropic universe with tiny, close to Gaussian, density fluctuations
+The initial conditions in cosmology are commonly described by the density perturbation
 
 ```math
 \delta(\bm{q}) = \frac{\rho(\bm{q})}{\bar{\rho}} - 1\,,
 ```
 
-with the energy density $\rho$ and the mean density $\bar{\rho}.$ After the epoch of recombination, these fluctuations gravitationally collapsed to form the present day cosmic web.
-
-### Gaussian random fields
-Theories for the origin of our Universe describe the density perturbation $\delta:\mathbb{R}^d \to \mathbb{R}$ on the space $\mathbb{R}^d$ in terms of random fields. Instead of predicting a particular distribution of the energy in the early universe, the theories describe its statistical properties. We will here restrict attention to Gaussian random fields. For an example of a realization see the figure below.
+with the density $\rho(\bm{q})$ at $\bm{q}$ and the mean density $\bar{\rho}.$ After the epoch of recombination, these fluctuations gravitationally collapsed to form the present day cosmic web. Early Universe models typically describe the density perturbation $\delta:\mathbb{R}^d \to \mathbb{R}$ on the space $\mathbb{R}^d$ in terms of random fields. Instead of predicting a particular distribution of the energy in the early universe, the theories describe its statistical properties. We will here restrict attention to Gaussian random fields. For an example of a realization see the figure below.
 
 [![Gaussian Random field](assets/figures/GRF.png)](https://github.com/jfeldbrugge/Nbody2D.jl/blob/main/docs/src/assets/figures/GRF.png)
 
-#### The definition
+#### Gaussian random fields
 By construction, the density perturbation has zero mean
 
 ```math
