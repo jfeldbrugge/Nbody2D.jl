@@ -293,7 +293,7 @@ function Caustics!(hess, iso, box::Box)
     
     N = box.N
     L = box.L
-    Range = range(0, L, N + 1)[1 : end - 1]
+    Range = box.range
     λ1_grad = gradient(λ1, box)
 
     C1(h) = h[1] - h[3]
@@ -331,6 +331,11 @@ function transposeSkeleton(simplices)
     return [[sim[:,2] sim[:,1]] for sim in simplices]
 end
 
+"Push the skeleton from Lagrangian to Eulerian space"
+function Eulerian(skeleton::CausticSkeleton, state::State, box::Box)
+    return Eulerian(skeleton, state.position .- LagrangianGrid(box), box::Box)
+end
+
 # Push from Lagrangian to Eulerian space
 "Push the skeleton from Lagrangian to Eulerian space"
 function Eulerian(skeleton::CausticSkeleton, s, box::Box)
@@ -346,7 +351,7 @@ end
 
 "Push the skeleton from Lagrangian to Eulerian space"
 function Eulerian(simplices, s, box::Box)
-    Range = range(0, box.L, box.N + 1)[1 : end - 1]
+    Range = box.range
     s1_itp = Interpolations.scale(interpolate(s[:,:,1], Interpolations.BSpline(Linear(Periodic()))), Range, Range)
     s2_itp = Interpolations.scale(interpolate(s[:,:,2], Interpolations.BSpline(Linear(Periodic()))), Range, Range)
 
@@ -360,8 +365,8 @@ end
 
 "Push the skeleton from Lagrangian to Eulerian space"
 Eulerian(q, s1_itp, s2_itp) = q .+ [
-    s1_itp(q[1], q[2]), 
-    s2_itp(q[1], q[2])]
+    s1_itp(q[2], q[1]), 
+    s2_itp(q[2], q[1])]
 
 function scaleSimplices!(skeleton::CausticSkeleton, L)
     scaleSimplices!(skeleton.A2, L)

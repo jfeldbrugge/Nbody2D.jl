@@ -27,7 +27,7 @@ adot(a, cosmology::Cosmology) = cosmology.H0 * a * sqrt(cosmology.OmegaL + cosmo
 """
     The growing mode.
 """
-function growing_mode(a::AbstractFloat, cosmology::Cosmology)
+function growing_mode(a, cosmology::Cosmology)
     if a <= 0.001
         return a 
     else
@@ -71,22 +71,47 @@ mutable struct State
 end
 
 """
+    Lagrangian grid
+"""
+function LagrangianGrid(box::Box)
+    q_y = repeat(box.range, 1, box.N)
+    q_x = q_y'
+    return stack((q_x, q_y))
+end
+
+"""
     Evaluate the Zel'dovich approximation.
 """
-function Zeldovich(phi, a_pos, a_vel, box, cosmology::Cosmology)
-    u_x, u_y = -box.N / box.L .* Grad2(phi, 1), -box.N / box.L .* Grad2(phi, 2)
-
-    qRange = range(0. , box.L, box.N + 1)[2:end]
-    q_x = repeat(qRange, 1, box.N)
-    q_y = q_x'
-
+function Zeldovich(ϕ, a_pos, a_vel, box, cosmology::Cosmology)
     Dp_pos = growing_mode(a_pos, cosmology)
     Dp_vel = growing_mode(a_vel, cosmology)
-    X = stack((q_x .+ Dp_pos * u_x, q_y .+ Dp_pos * u_y))
-    P = stack((Dp_vel * u_x, Dp_vel * u_y))
-    
+
+    ∇ϕ = gradient(ϕ, box)
+
+    X = LagrangianGrid(box) .+ Dp_pos .* ∇ϕ
+    P = Dp_vel .* ∇ϕ
+
     return State(a_pos, X, P)
 end
+
+
+# """
+#     Evaluate the Zel'dovich approximation.
+# """
+# function Zeldovich(phi, a_pos, a_vel, box, cosmology::Cosmology)
+#     u_x, u_y = -box.N / box.L .* Grad2(phi, 1), -box.N / box.L .* Grad2(phi, 2)
+
+#     qRange = range(0. , box.L, box.N + 1)[2:end]
+#     q_x = repeat(qRange, 1, box.N)
+#     q_y = q_x'
+
+#     Dp_pos = growing_mode(a_pos, cosmology)
+#     Dp_vel = growing_mode(a_vel, cosmology)
+#     X = stack((q_x .+ Dp_pos * u_x, q_y .+ Dp_pos * u_y))
+#     P = stack((Dp_vel * u_x, Dp_vel * u_y))
+    
+#     return State(a_pos, X, P)
+# end
 
 """
     A drift step.

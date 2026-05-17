@@ -19,5 +19,5 @@ module Nbody2D
     export Cosmology, Zeldovich, LeapFrog
     export PS_DTFE, ps_density, ps_velocity, numberOfStreams
     export Caustics!, eigenFields123, Eulerian
-    export plotMesh, plotMesh!
+    export plotMesh, plotMesh!, plotSkeleton, plotSkeleton!
 end

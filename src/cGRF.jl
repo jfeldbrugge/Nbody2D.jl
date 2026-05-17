@@ -16,7 +16,6 @@ function generalizedMoment(i, ns, Rs, α, σ)
     return sqrt(quadgk(integrand, 0, Inf, rtol=1e-10)[1])
 end
 
-
 # Build a constrained Gaussian Random field with the Hoffmann-Ribak algorithm
 "Constrained Gaussian random field object"
 struct cGRF

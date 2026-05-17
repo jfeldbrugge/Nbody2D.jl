@@ -9,10 +9,12 @@ struct Box
     kx 
     ky 
     m
+    range
 
     function Box(N, L, m = 1) 
         k = repeat(fftfreq(N) * N * 2. * π / L, 1, N)
-        return new(N, L, L / N, k', k,m)    
+        Range = range(0, L; length=N + 1)[1:end - 1]
+        return new(N, L, L / N, k', k,m, Range)    
     end
     
 end
