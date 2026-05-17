@@ -20,20 +20,24 @@ function plotMesh(state, box, color = :black, margin = 0., title = "")
     return plotMesh!(state, box, color, margin, title)
 end
 " Plot Caustic Skeleton"
-function plotSkeleton!(skeleton::CausticSkeleton, plotA2 = true)
-    if plotA2
+function plotSkeleton!(skeleton::CausticSkeleton, plots = [true, true, true, true])
+    if plots[1]
         plot!([(sim[:,1], sim[:,2]) for sim in skeleton.A2], label = false, color = :blue, linewidth = 2)
     end
 
-    plot!([(sim[:,1], sim[:,2]) for sim in skeleton.A3], label = false, color = :red, linewidth = 2)
+    if plots[2]
+        plot!([(sim[:,1], sim[:,2]) for sim in skeleton.A3], label = false, color = :red, linewidth = 2)
+    end
 
-    scatter!([sim[1] for sim in skeleton.A4],
-            [sim[2] for sim in skeleton.A4], 
-            color = :green, label = false)
+    if plots[3]
+        scatter!([sim[1] for sim in skeleton.A4],
+                 [sim[2] for sim in skeleton.A4], color = :green, label = false)
+    end
 
-    scatter!([sim[1] for sim in skeleton.D4],
-            [sim[2] for sim in skeleton.D4], 
-            color = :blue, label = false)
+    if plots[4]
+        scatter!([sim[1] for sim in skeleton.D4],
+                 [sim[2] for sim in skeleton.D4], color = :blue, label = false)
+    end
     
     plot!()    
 end

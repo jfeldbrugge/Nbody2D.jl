@@ -16,7 +16,7 @@ module Nbody2D
 
     export Box, gradient, hessian, laplacian, smooth
     export GRF, cGRF, constraintGRF, meanField, varianceField, measureConstraints, generalizedMoment
-    export Cosmology, Zeldovich, LeapFrog
+    export Cosmology, Zeldovich, LeapFrog, LeapFrogSnapshots
     export PS_DTFE, ps_density, ps_velocity, numberOfStreams
     export Caustics!, eigenFields123, Eulerian
     export plotMesh, plotMesh!, plotSkeleton, plotSkeleton!

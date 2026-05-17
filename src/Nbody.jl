@@ -98,8 +98,8 @@ end
 # """
 #     Evaluate the Zel'dovich approximation.
 # """
-# function Zeldovich(phi, a_pos, a_vel, box, cosmology::Cosmology)
-#     u_x, u_y = -box.N / box.L .* Grad2(phi, 1), -box.N / box.L .* Grad2(phi, 2)
+# function Zeldovich(ϕ, a_pos, a_vel, box, cosmology::Cosmology)
+#     u_x, u_y = -box.N / box.L .* Grad2(ϕ, 1), -box.N / box.L .* Grad2(ϕ, 2)
 
 #     qRange = range(0. , box.L, box.N + 1)[2:end]
 #     q_x = repeat(qRange, 1, box.N)
@@ -125,11 +125,11 @@ end
 """
 function Kick(a, δa, X, box, m, cosmology::Cosmology)
     delta = CIC(X, box) .* m .- 1.
-    phi_f = fft(delta) ./ (box.kx.^2 .+ box.ky.^2)
-    phi_f[1,1] = 0.
-    phi = real(ifft(phi_f)) .* cosmology.G ./ a
+    ϕ_f = fft(delta) ./ (box.kx.^2 .+ box.ky.^2)
+    ϕ_f[1,1] = 0.
+    ϕ = real(ifft(ϕ_f)) .* cosmology.G ./ a
 
-    u_x, u_y = box.N / box.L .* Grad2(phi, 1), box.N / box.L .* Grad2(phi, 2)
+    u_x, u_y = box.N / box.L .* Grad2(ϕ, 1), box.N / box.L .* Grad2(ϕ, 2)
     
     acc_x = Interp2D(u_x, mod.(hcat(vec(X[:,:,1]'), vec(X[:,:,2]')), box.L) ./ box.res)
     acc_y = Interp2D(u_y, mod.(hcat(vec(X[:,:,1]'), vec(X[:,:,2]')), box.L) ./ box.res)
@@ -137,16 +137,37 @@ function Kick(a, δa, X, box, m, cosmology::Cosmology)
     return δa / adot(a, cosmology) .* acc
 end
 
+
+function LeapFrogStep(state::State, a, δa, force_box::Box, mass, cosmology::Cosmology)
+    state.position += Drift(a, δa, state.momentum, cosmology)
+    state.momentum -= Kick(a + δa / 2., δa, state.position, force_box, mass, cosmology)
+end
+
 """
     The Leap Frog integrator.
 """
-function LeapFrog(phi, ai, af, δa, box, cosmology::Cosmology)
+function LeapFrog(ϕ, ai, af, δa, box::Box, cosmology::Cosmology)
     force_box = Box(2 * box.N, box.L)
     mass = (force_box.N / box.N)^2
-    state = Zeldovich(phi, ai, ai + δa / 2., box, cosmology)
+    state = Zeldovich(ϕ, ai, ai + δa / 2., box, cosmology)
     for a in ai:δa:af
-        state.position += Drift(a, δa, state.momentum, cosmology)
-        state.momentum -= Kick(a + δa / 2., δa, state.position, force_box, mass, cosmology)
+        LeapFrogStep(state, a, δa, force_box, mass, cosmology)
     end
     return state
+end
+
+"""
+    The Leap Frog integrator.
+"""
+function LeapFrogSnapshots(ϕ, ai, af, δa, box::Box, cosmology::Cosmology)
+    snapshots = Vector{Nbody2D.State}(undef, length(ai:δa:af))
+
+    force_box = Box(2 * box.N, box.L)
+    mass = (force_box.N / box.N)^2
+    state = Zeldovich(ϕ, ai, ai + δa / 2., box, cosmology)
+    for (i, a) in enumerate(ai:δa:af)
+        LeapFrogStep(state, a, δa, force_box, mass, cosmology)
+        snapshots[i] = deepcopy(state)
+    end
+    return snapshots
 end
