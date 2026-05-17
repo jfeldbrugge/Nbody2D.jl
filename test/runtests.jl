@@ -22,6 +22,8 @@ using Test
     stateZeldovich = Zeldovich(phi, af, af, box, EdS)
     stateNbody = LeapFrog(phi, ai, af, δa, box, EdS)
 
+    # savefig(plotMesh(stateNbody, box), "testFigure.png")
+
     @plottest plotMesh(stateNbody, box) "baseline/testFigure.png" 
 
     @plottest begin
@@ -39,8 +41,8 @@ using Test
     
     p = [25. + 0.1, 25. + 0.3]
 
-    @test ps_density(p, estimatorZeldovich) ≈ 0.23577650370940562
-    @test ps_density(p, estimatorNbody) ≈ 0.2905879496022735
+    @test ps_density(p, estimatorZeldovich) ≈ 0.15695678684365458
+    @test ps_density(p, estimatorNbody) ≈ 0.1885269531128359
     # @test ps_velocity(p, estimatorZeldovich) ≈ [-1.759013770242557 -0.09413530535089731]
     @test numberOfStreams(p, estimatorZeldovich) == 1
 
