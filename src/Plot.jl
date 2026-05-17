@@ -26,6 +26,15 @@ function plotSkeleton!(skeleton::CausticSkeleton, plotA2 = true)
     end
 
     plot!([(sim[:,1], sim[:,2]) for sim in skeleton.A3], label = false, color = :red, linewidth = 2)
+
+    scatter!([sim[1] for sim in skeleton.A4],
+            [sim[2] for sim in skeleton.A4], 
+            color = :green, label = false)
+
+    scatter!([sim[1] for sim in skeleton.D4],
+            [sim[2] for sim in skeleton.D4], 
+            color = :blue, label = false)
+    
     plot!()    
 end
 
