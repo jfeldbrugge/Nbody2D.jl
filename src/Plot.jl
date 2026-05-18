@@ -16,26 +16,26 @@ end
 
 " Mesh plot of the N-body simulation"
 function plotMesh(state, box, color = :black, margin = 0., title = "")
-    plot()
+    Plots.plot()
     return plotMesh!(state, box, color, margin, title)
 end
 " Plot Caustic Skeleton"
 function plotSkeleton!(skeleton::CausticSkeleton, plots = [true, true, true, true])
     if plots[1]
-        plot!([(sim[:,1], sim[:,2]) for sim in skeleton.A2], label = false, color = :blue, linewidth = 2)
+        Plots.plot!([(sim[:,1], sim[:,2]) for sim in skeleton.A2], label = false, color = :blue, linewidth = 2)
     end
 
     if plots[2]
-        plot!([(sim[:,1], sim[:,2]) for sim in skeleton.A3], label = false, color = :red, linewidth = 2)
+        Plots.plot!([(sim[:,1], sim[:,2]) for sim in skeleton.A3], label = false, color = :red, linewidth = 2)
     end
 
     if plots[3]
-        scatter!([sim[1] for sim in skeleton.A4],
+        Plots.scatter!([sim[1] for sim in skeleton.A4],
                  [sim[2] for sim in skeleton.A4], color = :green, label = false)
     end
 
     if plots[4]
-        scatter!([sim[1] for sim in skeleton.D4],
+        Plots.scatter!([sim[1] for sim in skeleton.D4],
                  [sim[2] for sim in skeleton.D4], color = :blue, label = false)
     end
     
@@ -44,6 +44,6 @@ end
 
 " Plot Caustic Skeleton"
 function plotSkeleton(skeleton::CausticSkeleton, plotA2 = true)
-    plot(aspect_ratio=:equal)
+    Plots.plot(aspect_ratio=:equal)
     plotSkeleton!(skeleton, plotA2)
 end
