@@ -29,8 +29,7 @@ let ns = 2., Rs = 1., α = 1., seed = 1
 end
 
 # Plot the deformation potential.
-qRange = range(0, box.L; length=box.N)
-heatmap(qRange, qRange, phi, 
+heatmap(box.range, box.range, phi, 
         aspect_ratio=:equal, 
         xlims=(0, box.L), ylims=(0, box.L), 
         title="Displacement potential")
@@ -38,21 +37,18 @@ heatmap(qRange, qRange, phi,
 
 Alternatively, we add constraints on the derivatives of the (smoothed) Gaussian random field in a point. In the example below, we constrain the function value and set the first-order derivatives of the Gaussian smoothed initial conditions at the centre of the box.
 
-```
-@example tutorial
+```@example tutorial
     let ns = 2., Rs = 1., α = 1., seed = 1, σ = 1., p = [box.L / 2, box.L / 2], ders = [0 0; 1 0; 0 1]
         global cgrf = cGRF(box, k -> powerSpectrum(k, ns, Rs, α), σ, p, ders)
         c = [1, 0, 0]
         global (f, f_c) = constraintGRF(c, seed, cgrf, box)
         global f_mean = meanField(c, cgrf)
         global f_var = varianceField(cgrf)
-
-        rangeX = range(0, box.L, box.N)
    
-        pl_f     = heatmap(rangeX, rangeX, f,     aspect_ratio=:equal, xlims=(0, box.L), ylims=(0, box.L), title = "Unconstrained GRF")
-        pl_f_c   = heatmap(rangeX, rangeX, f_c,   aspect_ratio=:equal, xlims=(0, box.L), ylims=(0, box.L), title = "Constrained GRF")
-        pl_f_mean = heatmap(rangeX, rangeX, f_mean, aspect_ratio=:equal, xlims=(0, box.L), ylims=(0, box.L), title = "Mean field")
-        pl_f_var = heatmap(rangeX, rangeX, f_var, aspect_ratio=:equal, xlims=(0, box.L), ylims=(0, box.L), title = "Variance of the residue")
+        pl_f     = heatmap(box.range, box.range, f,     aspect_ratio=:equal, xlims=(0, box.L), ylims=(0, box.L), title = "Unconstrained GRF")
+        pl_f_c   = heatmap(box.range, box.range, f_c,   aspect_ratio=:equal, xlims=(0, box.L), ylims=(0, box.L), title = "Constrained GRF")
+        pl_f_mean = heatmap(box.range, box.range, f_mean, aspect_ratio=:equal, xlims=(0, box.L), ylims=(0, box.L), title = "Mean field")
+        pl_f_var = heatmap(box.range, box.range, f_var, aspect_ratio=:equal, xlims=(0, box.L), ylims=(0, box.L), title = "Variance of the residue")
 
         plot(pl_f, pl_f_c, pl_f_mean, pl_f_var, layout = grid(2, 2), size=(1000, 800))
     end
