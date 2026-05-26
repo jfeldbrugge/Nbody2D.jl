@@ -163,10 +163,6 @@ end
 
 "Compute the cusp (A3), swallowtail (A4) and butterfly (A5) caustics"
 function PolygoniseA!(g::gridcell, skeleton::CausticSkeleton, iso, λ1_grad, v1)
-    # PolygoniseA!(g, skeleton, iso, [1, 2, 3], λ1_grad, v1)
-    # PolygoniseA!(g, skeleton, iso, [1, 3, 4], λ1_grad, v1)
-    # PolygoniseA!(g, skeleton, iso, [2, 3, 4], λ1_grad, v1)
-
     PolygoniseA!(g, skeleton, iso, [1, 2, 4], λ1_grad, v1)
     PolygoniseA!(g, skeleton, iso, [1, 3, 4], λ1_grad, v1)
 end
