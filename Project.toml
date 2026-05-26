@@ -1,6 +1,6 @@
 name = "Nbody2D"
 uuid = "e7818769-3b28-4efa-a321-272a2210d310"
-version = "1.1.0"
+version = "1.2.0"
 authors = ["Job Feldbrugge <14946916+jfeldbrugge@users.noreply.github.com> and contributors"]
 
 [deps]
