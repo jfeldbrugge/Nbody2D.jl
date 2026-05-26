@@ -56,8 +56,7 @@ Alternatively, we add constraints on the derivatives of the (smoothed) Gaussian 
 
 The constrained realisation satisfies the constraints, corresponding to a critical point at function value $1$,
 
-```
-@example tutorial
+```@example tutorial
     @show measureConstraints(f_c, cgrf)
 ```
 
