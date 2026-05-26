@@ -9,8 +9,7 @@ In this tutorial, we demonstrate the usage of the *Nbody2D.jl*.
 ## Cosmology and initial conditions
 We set the cosmological background in which the $N$-body simulation operates and sample a Gaussian random field to create initial conditions for the $N$-body simulation. We can sample the initial conditions from an unconstrained Gaussian random field
 
-```
-@example tutorial
+```@example tutorial
 using Nbody2D, Plots, SpecialFunctions
 
 # Set the simulation box and cosmological model.
