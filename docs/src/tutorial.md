@@ -63,8 +63,7 @@ The constrained realisation satisfies the constraints, corresponding to a critic
 ## N-body simulation
 Given the initial conditions, we evolve the $N$-body particles with both the Zel'dovich approximation and an $N$-body simulation.
 
-```
-@example tutorial
+```@example tutorial
 ai, af, δa = 0.02, 2.02, 0.02
 
 # Zel'dovich approximation
