@@ -13,10 +13,9 @@ struct Box
 
     function Box(N, L, m = 1) 
         k = repeat(fftfreq(N) * N * 2. * π / L, 1, N)
-        Range = range(0, L; length=N + 1)[1:end - 1]
+        Range = range(0, L; length=N + 1)[begin:end - 1]
         return new(N, L, L / N, k', k,m, Range)    
     end
-    
 end
 
 # Operations on scalar fields represented by 2D arrays

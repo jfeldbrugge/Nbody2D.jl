@@ -20,12 +20,12 @@ end
 
 # Sample a realisation of a Gaussian random field.
 "Power spectrum."
-function P(k, ns, Rs, α)
+function powerSpectrum(k, ns, Rs, α)
     return α^2 * 4. * π * Rs^(2. + ns) / gamma(1. + ns / 2.) * k^(ns - 4.) * exp(-Rs^2 * k^2)
 end
 
 let ns = 2., Rs = 1., α = 1., seed = 1
-    global phi = GRF(k -> P(k, ns, Rs, α), seed, box)
+    global phi = GRF(k -> powerSpectrum(k, ns, Rs, α), seed, box)
 end
 
 # Plot the deformation potential.
@@ -40,7 +40,7 @@ Alternatively, we add constraints on the derivatives of the (smoothed) Gaussian 
 
 ```@example tutorial
     let ns = 2., Rs = 1., α = 1., seed = 1, σ = 1., p = [box.L / 2, box.L / 2], ders = [0 0; 1 0; 0 1]
-        global cgrf = cGRF(box, k -> P(k, ns, Rs, α), σ, p, ders)
+        global cgrf = cGRF(box, k -> powerSpectrum(k, ns, Rs, α), σ, p, ders)
         c = [1, 0, 0]
         global (f, f_c) = constraintGRF(c, seed, cgrf, box)
         global f_mean = meanField(c, cgrf)
