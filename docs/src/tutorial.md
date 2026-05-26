@@ -82,8 +82,7 @@ plot(zeldovichPlot, nbodyPlot, size = (1200, 600), legend = false,
 ## Phase-Space Delaunay Tessellation Density Field Estimator
 We evaluate the density, velocity and number of stream fields with the Phase-Space Delaunay Tessellation Density Field Estimator (PS-DTFE).
 
-```
-@example tutorial
+```@example tutorial
 # Build PS-DTFE estimators.
 let depth = 10
     stateInitial = Zeldovich(phi, δa, δa, box, EdS)
