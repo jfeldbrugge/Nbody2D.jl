@@ -71,7 +71,7 @@ volume(sim, points) = @inbounds abs(det(@view(points[@view(sim[2:end]),:])' .- @
 struct PS_DTFE
     rho::Vector{Float64}
     Drho::Matrix{Float64}
-    Dv::Array{Float64}
+    Dv::Array{Float64, 3}
     tree::BVH
     simplices::Matrix{Int}
     positions::Matrix{Float64}

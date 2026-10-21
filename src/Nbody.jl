@@ -2,22 +2,23 @@
 """
     The cosmological background in which the N-body simulation runs with the current Hubble rate H0, the matter density OmegaM, dark energy density OmegaL and the curvature component OmegaK.
 """
-struct Cosmology
-    H0
-    OmegaM
-    OmegaL
-    OmegaK
-    G
-    factor
+struct Cosmology{T<:AbstractFloat}
+    H0::T
+    OmegaM::T
+    OmegaL::T
+    OmegaK::T
+    G::T
+    factor::T
+end
 
-    Cosmology(H0, OmegaM, OmegaL) = 
-    new(H0, 
+Cosmology(H0, OmegaM, OmegaL) = 
+    Cosmology{float(promote_type(typeof(H0), typeof(OmegaM), typeof(OmegaL)))}(
+        H0, 
         OmegaM, 
         OmegaL, 
         1. - OmegaM - OmegaL, 
         3. / 2. * OmegaM * H0^2., 
         growing_mode_norm(H0, OmegaM, OmegaL))
-end
 
 """
     The derivative of the scale factor.
@@ -58,31 +59,41 @@ function growing_mode_norm(H0, OmegaM, OmegaL)
 end
 
 """
-    Cloud-in-Cell density estimator.
+    Cloud-in-Cell density estimator on an N×N grid with spacing res, written to delta.
 """
-function CIC(X, box)
-    delta = zeros(box.N, box.N)
-    pos = mod.(hcat(vec(X[:,:,1]'), vec(X[:,:,2]')), box.L) ./ box.res
-    for i in 1:size(pos, 1)
-        idx1, idx2 = floor(Int, pos[i, 1]), floor(Int, pos[i, 2])
-        f1, f2     = pos[i, 1] - idx1, pos[i, 2] - idx2
-        delta[mod1(idx1 + 1, box.N), mod1(idx2 + 1, box.N)] += (1. - f1) * (1. - f2) 
-        delta[mod1(idx1 + 2, box.N), mod1(idx2 + 1, box.N)] += f1 * (1. - f2) 
-        delta[mod1(idx1 + 1, box.N), mod1(idx2 + 2, box.N)] += (1. - f1) * f2
-        delta[mod1(idx1 + 2, box.N), mod1(idx2 + 2, box.N)] += f1 * f2
+function CIC!(delta, X, N::Int, L, res)
+    fill!(delta, 0)
+    # particles are visited row by row, which fixes the order of the floating-point sums
+    @inbounds for i in axes(X, 1), j in axes(X, 2)
+        p1, p2     = mod(X[i, j, 1], L) / res, mod(X[i, j, 2], L) / res
+        idx1, idx2 = floor(Int, p1), floor(Int, p2)
+        f1, f2     = p1 - idx1, p2 - idx2
+        a1, a2, b1, b2 = wrap1(idx1 + 1, N), wrap1(idx1 + 2, N), wrap1(idx2 + 1, N), wrap1(idx2 + 2, N)
+        delta[a1, b1] += (1. - f1) * (1. - f2) 
+        delta[a2, b1] += f1 * (1. - f2) 
+        delta[a1, b2] += (1. - f1) * f2
+        delta[a2, b2] += f1 * f2
     end
     return delta
 end
+
+"""
+    Cloud-in-Cell density estimator.
+"""
+CIC(X, box::Box) = CIC!(zeros(eltype(X), box.N, box.N), X, box.N, box.L, box.res)
 
 # Nbody
 """
     The state of the N-body simulation in phase-space.
 """
-mutable struct State 
-    time 
-    position
-    momentum
+mutable struct State{T<:Real, A<:AbstractArray{T, 3}}
+    time::T
+    position::A
+    momentum::A
 end
+
+State(time::Real, position::AbstractArray{T, 3}, momentum::AbstractArray{T, 3}) where {T} =
+    State{T, typeof(position)}(time, position, momentum)
 
 """
     Lagrangian grid
@@ -128,38 +139,89 @@ end
 # end
 
 """
+    Preallocated grids and FFT plans for the particle-mesh force on the force grid `box`.
+"""
+struct PMWorkspace{T, B<:Box{T}, PF, PI}
+    box::B
+    mass::T
+    delta::Matrix{T}
+    δk::Matrix{Complex{T}}
+    k2::Matrix{T}
+    ϕ::Matrix{T}
+    u_x::Matrix{T}
+    u_y::Matrix{T}
+    rfft_plan::PF
+    irfft_plan::PI
+end
+
+function PMWorkspace(box::Box{T}, mass) where {T}
+    N = box.N
+    delta = zeros(T, N, N)
+    rfft_plan = plan_rfft(delta)
+    δk = rfft_plan * delta
+    irfft_plan = plan_irfft(δk, N)
+    k2 = box.kx[1:N ÷ 2 + 1, :].^2 .+ box.ky[1:N ÷ 2 + 1, :].^2
+    return PMWorkspace(box, T(mass), delta, δk, k2, zeros(T, N, N), zeros(T, N, N), zeros(T, N, N), rfft_plan, irfft_plan)
+end
+
+"""
     A drift step.
 """
 function Drift(a, δa, P, cosmology::Cosmology) 
     return δa .* P / (a^2 * adot(a, cosmology))
 end
 
+"In-place drift step, X += Drift(a, δa, P, cosmology)."
+function Drift!(X, a, δa, P, cosmology::Cosmology)
+    s = a^2 * adot(a, cosmology)
+    X .+= δa .* P ./ s
+    return X
+end
+
+"""
+    In-place kick step, P -= Kick(a, δa, X, ws.box, ws.mass, cosmology).
+"""
+function Kick!(P, a, δa, X, ws::PMWorkspace, cosmology::Cosmology)
+    N, L, res = ws.box.N, ws.box.L, ws.box.res
+
+    CIC!(ws.delta, X, N, L, res)
+    ws.delta .= ws.delta .* ws.mass .- 1.
+    mul!(ws.δk, ws.rfft_plan, ws.delta)
+    ws.δk ./= ws.k2
+    ws.δk[1, 1] = 0.
+    mul!(ws.ϕ, ws.irfft_plan, ws.δk)
+    ws.ϕ .= ws.ϕ .* cosmology.G ./ a
+
+    Grad2!(ws.u_x, ws.ϕ, 1, N / L)
+    Grad2!(ws.u_y, ws.ϕ, 2, N / L)
+
+    c = δa / adot(a, cosmology)
+    u_x, u_y = ws.u_x, ws.u_y
+    @inbounds for j in axes(X, 2), i in axes(X, 1)
+        i1, i2, j1, j2, m1, m2, n1, n2 = interp_weights(N, mod(X[i, j, 1], L) / res, mod(X[i, j, 2], L) / res)
+        P[i, j, 1] += c * (u_x[i1, j1] * n1 * n2 + u_x[i2, j1] * m1 * n2 + u_x[i1, j2] * n1 * m2 + u_x[i2, j2] * m1 * m2)
+        P[i, j, 2] += c * (u_y[i1, j1] * n1 * n2 + u_y[i2, j1] * m1 * n2 + u_y[i1, j2] * n1 * m2 + u_y[i2, j2] * m1 * m2)
+    end
+    return P
+end
+
 """
     A kick step.
 """
-function Kick(a, δa, X, box, m, cosmology::Cosmology)
-    delta = CIC(X, box) .* m .- 1.
-    ϕ_f = fft(delta) ./ (box.kx.^2 .+ box.ky.^2)
-    ϕ_f[1,1] = 0.
-    ϕ = real(ifft(ϕ_f)) .* cosmology.G ./ a
-
-    u_x, u_y = box.N / box.L .* Grad2(ϕ, 1), box.N / box.L .* Grad2(ϕ, 2)
-    
-    acc_x = Interp2D(u_x, mod.(hcat(vec(X[:,:,1]'), vec(X[:,:,2]')), box.L) ./ box.res)
-    acc_y = Interp2D(u_y, mod.(hcat(vec(X[:,:,1]'), vec(X[:,:,2]')), box.L) ./ box.res)
-    acc = -stack((reshape(acc_x, (box.N ÷ 2, box.N ÷ 2))', reshape(acc_y, (box.N ÷ 2, box.N ÷ 2))'))
-    return δa / adot(a, cosmology) .* acc
-end
-
+Kick(a, δa, X, box, m, cosmology::Cosmology) = -Kick!(zero(X), a, δa, X, PMWorkspace(box, m), cosmology)
 
 """
     A leap frog step moving the positions from a to a + δa and the momenta from a + δa/2 to a + 3δa/2.
 """
-function LeapFrogStep(state::State, a, δa, force_box::Box, mass, cosmology::Cosmology)
-    state.position += Drift(a + δa / 2., δa, state.momentum, cosmology)
-    state.momentum -= Kick(a + δa, δa, state.position, force_box, mass, cosmology)
+function LeapFrogStep!(state::State, a, δa, ws::PMWorkspace, cosmology::Cosmology)
+    Drift!(state.position, a + δa / 2., δa, state.momentum, cosmology)
+    Kick!(state.momentum, a + δa, δa, state.position, ws, cosmology)
     state.time = a + δa
+    return state
 end
+
+LeapFrogStep(state::State, a, δa, force_box::Box, mass, cosmology::Cosmology) =
+    LeapFrogStep!(state, a, δa, PMWorkspace(force_box, mass), cosmology)
 
 "Number of leap frog steps from ai to af."
 nsteps(ai, af, δa) = round(Int, (af - ai) / δa)
@@ -169,10 +231,10 @@ nsteps(ai, af, δa) = round(Int, (af - ai) / δa)
 """
 function LeapFrog(ϕ, ai, af, δa, box::Box, cosmology::Cosmology)
     force_box = Box(2 * box.N, box.L)
-    mass = (force_box.N / box.N)^2
+    ws = PMWorkspace(force_box, (force_box.N / box.N)^2)
     state = Zeldovich(ϕ, ai, ai + δa / 2., box, cosmology)
     for i in 0:nsteps(ai, af, δa) - 1
-        LeapFrogStep(state, ai + i * δa, δa, force_box, mass, cosmology)
+        LeapFrogStep!(state, ai + i * δa, δa, ws, cosmology)
     end
     return state
 end
@@ -182,13 +244,12 @@ end
 """
 function LeapFrogSnapshots(ϕ, ai, af, δa, box::Box, cosmology::Cosmology)
     n = nsteps(ai, af, δa)
-    snapshots = Vector{Nbody2D.State}(undef, n)
-
     force_box = Box(2 * box.N, box.L)
-    mass = (force_box.N / box.N)^2
+    ws = PMWorkspace(force_box, (force_box.N / box.N)^2)
     state = Zeldovich(ϕ, ai, ai + δa / 2., box, cosmology)
+    snapshots = Vector{typeof(state)}(undef, n)
     for i in 1:n
-        LeapFrogStep(state, ai + (i - 1) * δa, δa, force_box, mass, cosmology)
+        LeapFrogStep!(state, ai + (i - 1) * δa, δa, ws, cosmology)
         snapshots[i] = deepcopy(state)
     end
     return snapshots

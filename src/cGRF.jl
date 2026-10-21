@@ -18,16 +18,16 @@ end
 
 # Build a constrained Gaussian Random field with the Hoffmann-Ribak algorithm
 "Constrained Gaussian random field object"
-struct cGRF
-    Pk::Matrix{AbstractFloat}
-    Hh::Vector{Matrix{ComplexF64}}
-    xi_i::Array{AbstractFloat, 3}
-    xi_ij::Matrix{AbstractFloat}
-    xi_ij_inv::Matrix{AbstractFloat}
-    bases::Array{AbstractFloat, 3}
+struct cGRF{T<:AbstractFloat}
+    Pk::Matrix{T}
+    Hh::Vector{Matrix{Complex{T}}}
+    xi_i::Array{T, 3}
+    xi_ij::Matrix{T}
+    xi_ij_inv::Matrix{T}
+    bases::Array{T, 3}
     
     "Construct the constrained Gaussian random field object."
-    function cGRF(box::Box, P, σ, p = [box.L / 2, box.L / 2], ders = [0 0; 1 0; 0 1])
+    function cGRF(box::Box{T}, P, σ, p = [box.L / 2, box.L / 2], ders = [0 0; 1 0; 0 1]) where {T}
         # conj.(h) in measureConstraints turns (-ik)ⁿ e^{-ik·p} into the derivative (ik)ⁿ evaluated at p
         ikx, iky = -im * box.kx, -im * box.ky
     
@@ -42,14 +42,14 @@ struct cGRF
         xi_ij = [real(mean(conj.(hi) .* hj .* Pk)) for hi in Hh, hj in Hh] * box.L^-2 * box.N^2
         xi_ij_inv = inv(xi_ij)
     
-        bases = zeros(size(ders, 1), box.N, box.N)
+        bases = zeros(T, size(ders, 1), box.N, box.N)
         for i in axes(bases, 1), j in axes(bases, 2), k in axes(bases, 3)
             for l in axes(xi_ij_inv, 2)
                 bases[i, j, k] += xi_ij_inv[i, l] * xi_i[j, k, l]
             end
         end
     
-        return new(Pk, Hh, xi_i, xi_ij, xi_ij_inv, bases)
+        return new{T}(Pk, Hh, xi_i, xi_ij, xi_ij_inv, bases)
     end
 end
 

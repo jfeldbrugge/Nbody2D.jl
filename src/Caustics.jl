@@ -111,10 +111,10 @@ end
 
 "Gridcell with attributes"
 struct gridcell
-    p::Array
-    eigen_1::Array
-    inner::Array
-    ID::Array
+    p::Matrix{Float64}
+    eigen_1::Vector{Float64}
+    inner::Vector{Float64}
+    ID::Vector{Int}
 
     function gridcell(i, j, λ1, λ1_grad, v1, Range)
         points = [
