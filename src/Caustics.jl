@@ -51,21 +51,22 @@ end
 "Evaluate the second order directional derivative v₁⋅∇(v₁⋅∇λ₁)"
 function directional_derivative_2(λ1_grad, v1, i, j, i_ref, j_ref, Δ)
     Ni = size(v1, 1)
+    # v1 and λ1_grad are (x, y) components, with x along the second array index j
     grad = [
-        derivative(
-            directional_derivative_1(λ1_grad, v1, mod(i - 3, 1:Ni), j, i_ref, j_ref),
-            directional_derivative_1(λ1_grad, v1, mod(i - 2, 1:Ni), j, i_ref, j_ref),
-            directional_derivative_1(λ1_grad, v1, mod(i - 1, 1:Ni), j, i_ref, j_ref),
-            directional_derivative_1(λ1_grad, v1, mod(i + 1, 1:Ni), j, i_ref, j_ref),
-            directional_derivative_1(λ1_grad, v1, mod(i + 2, 1:Ni), j, i_ref, j_ref),
-            directional_derivative_1(λ1_grad, v1, mod(i + 3, 1:Ni), j, i_ref, j_ref), Δ),
         derivative(
             directional_derivative_1(λ1_grad, v1, i, mod(j - 3, 1:Ni), i_ref, j_ref),
             directional_derivative_1(λ1_grad, v1, i, mod(j - 2, 1:Ni), i_ref, j_ref),
             directional_derivative_1(λ1_grad, v1, i, mod(j - 1, 1:Ni), i_ref, j_ref),
             directional_derivative_1(λ1_grad, v1, i, mod(j + 1, 1:Ni), i_ref, j_ref),
             directional_derivative_1(λ1_grad, v1, i, mod(j + 2, 1:Ni), i_ref, j_ref),
-            directional_derivative_1(λ1_grad, v1, i, mod(j + 3, 1:Ni), i_ref, j_ref), Δ)]
+            directional_derivative_1(λ1_grad, v1, i, mod(j + 3, 1:Ni), i_ref, j_ref), Δ),
+        derivative(
+            directional_derivative_1(λ1_grad, v1, mod(i - 3, 1:Ni), j, i_ref, j_ref),
+            directional_derivative_1(λ1_grad, v1, mod(i - 2, 1:Ni), j, i_ref, j_ref),
+            directional_derivative_1(λ1_grad, v1, mod(i - 1, 1:Ni), j, i_ref, j_ref),
+            directional_derivative_1(λ1_grad, v1, mod(i + 1, 1:Ni), j, i_ref, j_ref),
+            directional_derivative_1(λ1_grad, v1, mod(i + 2, 1:Ni), j, i_ref, j_ref),
+            directional_derivative_1(λ1_grad, v1, mod(i + 3, 1:Ni), j, i_ref, j_ref), Δ)]
     
     return sign(dot(v1[i_ref, j_ref, :], v1[i, j, :])) * dot(v1[i, j, :], grad)
 end
@@ -239,9 +240,8 @@ function PolygoniseD4!(g::gridcell, skeleton::CausticSkeleton, iso, hess, c1, c2
     val1 = extractCube(g.ID, c1) 
     val2 = extractCube(g.ID, c2)
 
-    PolygoniseD!(g, skeleton, iso, [1, 2, 3], val1, val2, hess)
+    PolygoniseD!(g, skeleton, iso, [1, 2, 4], val1, val2, hess)
     PolygoniseD!(g, skeleton, iso, [1, 3, 4], val1, val2, hess)
-    PolygoniseD!(g, skeleton, iso, [2, 3, 4], val1, val2, hess)
 end
 
 "Compute the umbilic (D4) caustics"
@@ -368,7 +368,7 @@ function scaleSimplices!(skeleton::CausticSkeleton, L)
     scaleSimplices!(skeleton.A2, L)
     scaleSimplices!(skeleton.A3, L)
     scaleSimplices!(skeleton.A4, L)
-    scaleSimplices!(skeleton.A5, L)
+    scaleSimplices!(skeleton.D4, L)
 end
 
 function scaleSimplices!(simplices, L)

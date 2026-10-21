@@ -10,9 +10,9 @@ function GRF(P, seed, box)
     return real(ifft(sqrt.(Pk) .* fft(randn(box.N, box.N)))) * box.N^(2/2) / box.L^(2/2)
 end
 
-"Generalzed moments."
-function generalizedMoment(i, ns, Rs, α, σ) 
-    integrand(k) = k^(2 * i +1) * P(k, ns, Rs, α) * exp(-σ^2 * k^2)/ (2. * π)
+"Generalized moment of the power spectrum P(k), smoothed on the scale σ."
+function generalizedMoment(i, P, σ) 
+    integrand(k) = k^(2 * i +1) * P(k) * exp(-σ^2 * k^2)/ (2. * π)
     return sqrt(quadgk(integrand, 0, Inf, rtol=1e-10)[1])
 end
 
@@ -28,7 +28,8 @@ struct cGRF
     
     "Construct the constrained Gaussian random field object."
     function cGRF(box::Box, P, σ, p = [box.L / 2, box.L / 2], ders = [0 0; 1 0; 0 1])
-        ikx, iky = im * box.kx, im * box.ky
+        # conj.(h) in measureConstraints turns (-ik)ⁿ e^{-ik·p} into the derivative (ik)ⁿ evaluated at p
+        ikx, iky = -im * box.kx, -im * box.ky
     
         Pk = P.(sqrt.(box.kx.^2 + box.ky.^2))
         Pk[1, 1] = 0.

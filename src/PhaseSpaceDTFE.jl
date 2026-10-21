@@ -137,13 +137,12 @@ end
 
 function ps_velocity(p::Vector{Float64}, estimator::PS_DTFE)
     simplexIndices = findIntersections(p, estimator.tree, estimator.positions, estimator.simplices)
-    println("simplex_indices = ", simplexIndices)
 
     vs = zeros(length(simplexIndices), length(p))
 
     @inbounds for (i, simplexIndex) in pairs(simplexIndices)
         pointIndex = estimator.simplices[simplexIndex, 1]
-        vs[i,:] = @view(estimator.velocities[pointIndex,:]) + @view(estimator.Dv[simplexIndex,:,:]) * (p .- @view(estimator.positions[pointIndex,:]))
+        vs[i,:] = @view(estimator.velocities[pointIndex,:]) + @view(estimator.Dv[simplexIndex,:,:])' * (p .- @view(estimator.positions[pointIndex,:]))
     end
     return vs
 end
@@ -161,10 +160,10 @@ function velocitySum(p::Vector{Float64}, estimator::PS_DTFE)
 
     @inbounds for (i, simplexIndex) in pairs(simplexIndices)
         pointIndex = estimator.simplices[simplexIndex, 1]
-        vs[i,:] = @view(estimator.velocities[pointIndex,:]) + @view(estimator.Dv[simplexIndex,:,:]) * (p .- @view(estimator.positions[pointIndex,:]))
+        vs[i,:] = @view(estimator.velocities[pointIndex,:]) + @view(estimator.Dv[simplexIndex,:,:])' * (p .- @view(estimator.positions[pointIndex,:]))
     end
 
-    if size(vs) == (1,3)  # single-stream region
+    if size(vs, 1) == 1  # single-stream region
         return vs
     else   # multistream region
         densities = zeros(length(simplexIndices))

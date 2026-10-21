@@ -20,7 +20,7 @@ end
 
 # Operations on scalar fields represented by 2D arrays
 "Convolution."
-convolve(a, b) = real(ifft(conj.(a) .* fft(b)))
+convolve(a, b) = real(ifft(a .* fft(b)))
 
 "Gradient of a scalar field"
 gradient(f, box::Box) = stack([

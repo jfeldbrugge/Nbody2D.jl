@@ -36,6 +36,20 @@ function growing_mode(a, cosmology::Cosmology)
 end
 
 """
+    The derivative of the growing mode with respect to the scale factor.
+"""
+function growing_mode_derivative(a, cosmology::Cosmology)
+    if a <= 0.001
+        return 1.
+    else
+        E = cosmology.OmegaL + cosmology.OmegaM * a^-3. + cosmology.OmegaK * a^-2.
+        dH = cosmology.H0 * (-3. * cosmology.OmegaM * a^-4. - 2. * cosmology.OmegaK * a^-3.) / (2. * sqrt(E))
+        I = quadgk(b -> adot(b, cosmology)^-3., 0.00001, a, rtol=1e-6)[1]
+        return cosmology.factor * (dH * I + adot(a, cosmology) / a * adot(a, cosmology)^-3.)
+    end
+end
+
+"""
     The normalization of the growing mode.
 """
 function growing_mode_norm(H0, OmegaM, OmegaL)
@@ -80,16 +94,16 @@ function LagrangianGrid(box::Box)
 end
 
 """
-    Evaluate the Zel'dovich approximation.
+    Evaluate the Zel'dovich approximation, x = q - D(a) ∇ϕ, with the positions at a_pos and the momenta p = a² da/dt dx/da at a_vel.
 """
 function Zeldovich(ϕ, a_pos, a_vel, box, cosmology::Cosmology)
     Dp_pos = growing_mode(a_pos, cosmology)
-    Dp_vel = growing_mode(a_vel, cosmology)
+    dDp_vel = a_vel^2 * adot(a_vel, cosmology) * growing_mode_derivative(a_vel, cosmology)
 
-    ∇ϕ = gradient(ϕ, box)
+    s = -gradient(ϕ, box)
 
-    X = LagrangianGrid(box) .+ Dp_pos .* ∇ϕ
-    P = Dp_vel .* ∇ϕ
+    X = LagrangianGrid(box) .+ Dp_pos .* s
+    P = dDp_vel .* s
 
     return State(a_pos, X, P)
 end
@@ -138,35 +152,43 @@ function Kick(a, δa, X, box, m, cosmology::Cosmology)
 end
 
 
+"""
+    A leap frog step moving the positions from a to a + δa and the momenta from a + δa/2 to a + 3δa/2.
+"""
 function LeapFrogStep(state::State, a, δa, force_box::Box, mass, cosmology::Cosmology)
-    state.position += Drift(a, δa, state.momentum, cosmology)
-    state.momentum -= Kick(a + δa / 2., δa, state.position, force_box, mass, cosmology)
+    state.position += Drift(a + δa / 2., δa, state.momentum, cosmology)
+    state.momentum -= Kick(a + δa, δa, state.position, force_box, mass, cosmology)
+    state.time = a + δa
 end
 
+"Number of leap frog steps from ai to af."
+nsteps(ai, af, δa) = round(Int, (af - ai) / δa)
+
 """
-    The Leap Frog integrator.
+    The Leap Frog integrator. The returned positions are at state.time = af, the momenta half a step later at af + δa/2.
 """
 function LeapFrog(ϕ, ai, af, δa, box::Box, cosmology::Cosmology)
     force_box = Box(2 * box.N, box.L)
     mass = (force_box.N / box.N)^2
     state = Zeldovich(ϕ, ai, ai + δa / 2., box, cosmology)
-    for a in ai:δa:af
-        LeapFrogStep(state, a, δa, force_box, mass, cosmology)
+    for i in 0:nsteps(ai, af, δa) - 1
+        LeapFrogStep(state, ai + i * δa, δa, force_box, mass, cosmology)
     end
     return state
 end
 
 """
-    The Leap Frog integrator.
+    The Leap Frog integrator, returning the state after every step (at ai + δa, ai + 2δa, ..., af).
 """
 function LeapFrogSnapshots(ϕ, ai, af, δa, box::Box, cosmology::Cosmology)
-    snapshots = Vector{Nbody2D.State}(undef, length(ai:δa:af))
+    n = nsteps(ai, af, δa)
+    snapshots = Vector{Nbody2D.State}(undef, n)
 
     force_box = Box(2 * box.N, box.L)
     mass = (force_box.N / box.N)^2
     state = Zeldovich(ϕ, ai, ai + δa / 2., box, cosmology)
-    for (i, a) in enumerate(ai:δa:af)
-        LeapFrogStep(state, a, δa, force_box, mass, cosmology)
+    for i in 1:n
+        LeapFrogStep(state, ai + (i - 1) * δa, δa, force_box, mass, cosmology)
         snapshots[i] = deepcopy(state)
     end
     return snapshots

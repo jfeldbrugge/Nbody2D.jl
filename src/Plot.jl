@@ -43,7 +43,7 @@ function plotSkeleton!(skeleton::CausticSkeleton, plots = [true, true, true, tru
 end
 
 " Plot Caustic Skeleton"
-function plotSkeleton(skeleton::CausticSkeleton, plotA2 = true)
+function plotSkeleton(skeleton::CausticSkeleton, plots = [true, true, true, true])
     Plots.plot(aspect_ratio=:equal)
-    plotSkeleton!(skeleton, plotA2)
+    plotSkeleton!(skeleton, plots)
 end
