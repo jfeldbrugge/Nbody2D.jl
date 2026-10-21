@@ -35,6 +35,7 @@ using LinearAlgebra, Test
     # Phase-Space Delaunay Tesselation Field Estimator
     let depth = 5
         stateInitial = Zeldovich(phi, δa, δa, box, EdS)
+        global stateInitial0 = stateInitial
         global estimatorZeldovich = PS_DTFE(stateInitial, stateZeldovich, depth, box)
         global estimatorNbody = PS_DTFE(stateInitial, stateNbody, depth, box)
         nothing
@@ -136,6 +137,18 @@ using LinearAlgebra, Test
             @test all(ps_density(p, est) ≈ ρ̄ for p in pts)
             @test all(numberOfStreams(p, est) == 1 for p in pts)
         end
+    end
+
+    # PS-DTFE: grid maps equal point queries (also beyond the box), independent of the cell grid,
+    # and the bounding volume hierarchy for debugging finds the same triangles
+    let xs = range(-3.0, 53.0, length = 57), ys = range(-1.5, 51.0, length = 43)
+        @test ps_density_grid(xs, ys, estimatorNbody) ≈ [ps_density([x, y], estimatorNbody) for y in ys, x in xs]
+        @test numberOfStreams_grid(xs, ys, estimatorNbody) == [numberOfStreams([x, y], estimatorNbody) for y in ys, x in xs]
+        coarse = PS_DTFE(stateInitial0, stateNbody, box; G = 7)
+        @test all(ps_density(p, coarse) ≈ ps_density(p, estimatorNbody) for p in ([25.1, 25.3], [3.7, 41.2], [49.9, 0.1]))
+        tree = Nbody2D.BVH(estimatorNbody, 4)
+        @test sort(Nbody2D.findIntersections([25.1, 25.3], tree, estimatorNbody.positions, estimatorNbody.corners)) ==
+              sort(Nbody2D.streams([25.1, 25.3], estimatorNbody))
     end
 
     # Generalized moment: ∫ k e^{-k²} e^{-σ²k²} dk / 2π = 1 / (4π(1 + σ²))

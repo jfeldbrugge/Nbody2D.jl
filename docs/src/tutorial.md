@@ -84,21 +84,23 @@ We evaluate the density, velocity and number of stream fields with the Phase-Spa
 
 ```@example tutorial
 # Build PS-DTFE estimators.
-let depth = 10
-    stateInitial = Zeldovich(phi, δa, δa, box, EdS)
-    global estimatorZeldovich = PS_DTFE(stateInitial, stateZeldovich, depth, box)
-    global estimatorNbody = PS_DTFE(stateInitial, stateNbody, depth, box)
+let stateInitial = Zeldovich(phi, δa, δa, box, EdS)
+    global estimatorZeldovich = PS_DTFE(stateInitial, stateZeldovich, box)
+    global estimatorNbody = PS_DTFE(stateInitial, stateNbody, box)
     nothing
 end
 
-# Evaluate density and number of stream fields.
+# Evaluate the density and number of stream fields on a regular grid (rows y, columns x).
 rangeX = 0 : box.L / (8. * box.N) : box.L
 
-densZeldovich   = [ps_density([x, y], estimatorZeldovich) for y in rangeX, x in rangeX]
-numberZeldovich = [numberOfStreams([x, y], estimatorZeldovich) for y in rangeX, x in rangeX]
+densZeldovich   = ps_density_grid(rangeX, rangeX, estimatorZeldovich)
+numberZeldovich = numberOfStreams_grid(rangeX, rangeX, estimatorZeldovich)
 
-densNbody   = [ps_density([x, y], estimatorNbody) for y in rangeX, x in rangeX]
-numberNbody = [numberOfStreams([x, y], estimatorNbody) for y in rangeX, x in rangeX]
+densNbody   = ps_density_grid(rangeX, rangeX, estimatorNbody)
+numberNbody = numberOfStreams_grid(rangeX, rangeX, estimatorNbody)
+
+# The fields can also be evaluated at arbitrary points, for example
+@show ps_density([25.1, 25.3], estimatorNbody), numberOfStreams([25.1, 25.3], estimatorNbody)
 
 # Plot the density and number of stream fields.
 densityZeldovichPlot = heatmap(rangeX, rangeX, log10.(densZeldovich), aspect_ratio=:equal)
