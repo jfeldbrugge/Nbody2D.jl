@@ -42,9 +42,9 @@ using LinearAlgebra, Test
     
     p = [25. + 0.1, 25. + 0.3]
 
-    @test ps_density(p, estimatorZeldovich) ≈ 0.15695678684365458
-    @test ps_density(p, estimatorNbody) ≈ 0.1591746500389334
-    @test ps_velocity(p, estimatorZeldovich) ≈ [92.55875854904846 -54.92156489264329]
+    @test ps_density(p, estimatorZeldovich) ≈ 0.18003857736541345
+    @test ps_density(p, estimatorNbody) ≈ 0.19985896583449622
+    @test ps_velocity(p, estimatorZeldovich) ≈ [115.20330374480434 -69.08250191156435]
     @test numberOfStreams(p, estimatorZeldovich) == 1
 
     # Constrained Gaussian Random Field
@@ -120,6 +120,22 @@ using LinearAlgebra, Test
         pts = [vec(m) for m in skeleton.D4]
         @test !any(norm(pts[i] - pts[j]) < b.res / 4 for i in eachindex(pts), j in eachindex(pts) if i < j)
         @test plotSkeleton(skeleton) isa Plots.Plot
+    end
+
+    # PS-DTFE: every particle is a vertex of six lattice triangles, so translations and shears give the exact density,
+    # also when particles wrap around the periodic box several times
+    let b = Box(24, 1.)
+        q = Nbody2D.LagrangianGrid(b)
+        ρ̄ = b.N^2 / b.L^2
+        pts = [[0.013, 0.977], [0.5013, 0.4987], [0.731, 0.264], [0.998, 0.002], [1.37, -0.41]]   # off the lattice lines
+        @test all(count(==(i), Nbody2D.lattice_triangles(b.N)) == 6 for i in 1:b.N^2)
+        for s_x in (fill(2.3, 24, 24), 1.7 .* sin.(2π .* q[:, :, 2])), wrap in (false, true)
+            x = copy(q); x[:, :, 1] .+= s_x
+            wrap && (x = mod.(x, b.L))
+            est = PS_DTFE(Nbody2D.State(0., q, zero(q)), Nbody2D.State(0., x, zero(q)), 3, b)
+            @test all(ps_density(p, est) ≈ ρ̄ for p in pts)
+            @test all(numberOfStreams(p, est) == 1 for p in pts)
+        end
     end
 
     # Generalized moment: ∫ k e^{-k²} e^{-σ²k²} dk / 2π = 1 / (4π(1 + σ²))

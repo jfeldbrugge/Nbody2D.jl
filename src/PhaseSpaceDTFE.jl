@@ -57,7 +57,9 @@ function findBox(p::Vector{Float64}, BVH_tree::BVH)
 end
 
 function intersection(p::Vector{Float64}, simplex)
-    @inbounds barry = inv(@view(simplex[2:end,:])' .- @view(simplex[1,:])) * (p .- @view(simplex[1,:]))
+    @inbounds A = @view(simplex[2:end,:])' .- @view(simplex[1,:])
+    det(A) == 0 && return false        # zero-area triangle
+    barry = inv(A) * (p .- @view(simplex[1,:]))
     return all(barry .>= 0) & all(barry .<= 1) & (sum(barry) <= 1.)
 end
 
@@ -68,124 +70,6 @@ end
 
 volume(sim, points) = @inbounds abs(det(@view(points[@view(sim[2:end]),:])' .- @view(points[sim[1],:]))) /  factorial(size(points, 2))
 
-struct PS_DTFE
-    rho::Vector{Float64}
-    Drho::Matrix{Float64}
-    Dv::Array{Float64, 3}
-    tree::BVH
-    simplices::Matrix{Int}
-    positions::Matrix{Float64}
-    velocities::Matrix{Float64}
-    positions_initial::Matrix{Float64}
-
-    function PS_DTFE(state_initial, state_final, depth, box)
-        m = box.m
-        positions_initial = reshape(state_initial.position, :, 2)
-        positions = reshape(state_final.position, :, 2)
-        velocities = reshape(state_final.momentum, :, 2)
-
-        positions = unwrap_x_(positions_initial, positions, box.L);
-        positions_initial, positions = translate(positions_initial, positions, box.L)
-        velocities          = frame_velocities(positions, velocities, box.L)
-        positions_initial, positions = frame(positions_initial, positions, box.L)
-
-        # simplices = delaunay(positions_initial).simplices
-        
-        tri = triangulate(positions_initial')
-        simplices = reduce(vcat, [collect(triangle_vertices(T))' for T in each_solid_triangle(tri)])
-
-        dim = size([0 box.L; 0 box.L], 1)
-    
-        BVH_tree = BVH(1:size(simplices, 1), [0 box.L; 0 box.L], positions, simplices, depth * dim)
-    
-        rho = zeros(size(positions,1))
-        @inbounds for i in axes(simplices, 1)
-            vol = volume(@view(simplices[i,:]), positions)
-            @inbounds for index in @view(simplices[i,:])
-                rho[index] += vol
-            end
-        end
-        rho = (1. + dim) * m ./ rho
-    
-        Drho = zeros(size(simplices, 1), dim)
-        Dv   = zeros(size(simplices, 1), dim, dim)
-    
-        @inbounds for i in axes(simplices, 1)
-            sim = @view(simplices[i,:])
-            p = @view(positions[sim,:])
-            r = @view(rho[sim,:])
-            v = @view(velocities[sim,:])
-            A_inv = inv(@view(p[2:end,:])' .- @view(p[1,:]))'
-            Drho[i,:] = A_inv * (@view(r[2:end]) .- r[1])
-            Dv[i,:,:] = A_inv * ((@view(v[2:end,:])' .- @view(v[1,:]))')
-        end
-    
-        return new(rho, Drho, Dv, BVH_tree, simplices, positions, velocities, positions_initial)
-    end
-end
-
-function ps_density(p::Vector{Float64}, estimator::PS_DTFE)
-    simplexIndices = findIntersections(p, estimator.tree, estimator.positions, estimator.simplices)
-
-    dens = 0.
-    @inbounds for simplexIndex in simplexIndices
-        pointIndex = estimator.simplices[simplexIndex,1]
-        dens += estimator.rho[pointIndex] + @view(estimator.Drho[simplexIndex,:])' * (p .- @view(estimator.positions[pointIndex,:]))
-    end
-    return dens
-end
-
-function ps_velocity(p::Vector{Float64}, estimator::PS_DTFE)
-    simplexIndices = findIntersections(p, estimator.tree, estimator.positions, estimator.simplices)
-
-    vs = zeros(length(simplexIndices), length(p))
-
-    @inbounds for (i, simplexIndex) in pairs(simplexIndices)
-        pointIndex = estimator.simplices[simplexIndex, 1]
-        vs[i,:] = @view(estimator.velocities[pointIndex,:]) + @view(estimator.Dv[simplexIndex,:,:])' * (p .- @view(estimator.positions[pointIndex,:]))
-    end
-    return vs
-end
-
-function numberOfStreams(p::Vector{Float64}, estimator::PS_DTFE)
-    simplexIndices = findIntersections(p, estimator.tree, estimator.positions, estimator.simplices)
-    return length(simplexIndices)
-end
-
-
-function velocitySum(p::Vector{Float64}, estimator::PS_DTFE)
-    simplexIndices = findIntersections(p, estimator.tree, estimator.positions, estimator.simplices)
-
-    vs = zeros(length(simplexIndices), length(p))
-
-    @inbounds for (i, simplexIndex) in pairs(simplexIndices)
-        pointIndex = estimator.simplices[simplexIndex, 1]
-        vs[i,:] = @view(estimator.velocities[pointIndex,:]) + @view(estimator.Dv[simplexIndex,:,:])' * (p .- @view(estimator.positions[pointIndex,:]))
-    end
-
-    if size(vs, 1) == 1  # single-stream region
-        return vs
-    else   # multistream region
-        densities = zeros(length(simplexIndices))
-        for (i, simplexIndex) in pairs(simplexIndices)
-            pointIndex   = estimator.simplices[simplexIndex,1]
-            densities[i] = estimator.rho[pointIndex] + @view(estimator.Drho[simplexIndex,:])' * (p .- @view(estimator.positions[pointIndex,:]))
-        end
-
-        #stream-density weighted sum of velocities
-        return sum(densities .* vs, dims=1) / sum(densities)
-    end
-end
-
-"""
-    unwrap_x_(q, x, L)
-
-Cosmological N-body simulations normally work with periodic boundary conditions. This function undoes the wrapping of particles around the box, assuming the particles did not travel more than half the size of the box.
-"""
-function unwrap_x_(q, x, L)
-    unwrap_s.(x - q, L) + q
-end
-
 """
     unwrap_s(s, L)
 
@@ -194,80 +78,150 @@ Cosmological N-body simulations normally work with periodic boundary conditions.
 unwrap_s(s, L) = mod((s + L / 2), L) - L / 2
 
 """
-    translate(coords_q, coords_x, L)
+    lattice_triangles(N)
 
-Cosmological N-body simulations normally work with periodic boundary conditions. This function shifts both the initial and final positions of the particles such that they are located in the simulation box in Eulerian space.
+Triangulation of the periodic N×N Lagrangian lattice. Every cell is split along the same diagonal, into
+(i, j)–(i+1, j)–(i+1, j+1) and (i, j)–(i+1, j+1)–(i, j+1), so that every particle is a vertex of exactly six triangles.
+Particle (i, j) has index i + (j - 1) N, matching reshape(state.position, :, 2).
 """
-function translate(coords_q, coords_x, L)
-    coords_q_ = copy(coords_q)
-    coords_x_ = copy(coords_x)
-
-    let index_x = coords_x .< 0.
-        coords_q_[index_x] .+= L
-        coords_x_[index_x] .+= L
+function lattice_triangles(N)
+    idx(i, j) = mod1(i, N) + (mod1(j, N) - 1) * N
+    simplices = Matrix{Int}(undef, 2N^2, 3)
+    t = 0
+    for j in 1:N, i in 1:N
+        a, b, c, d = idx(i, j), idx(i + 1, j), idx(i, j + 1), idx(i + 1, j + 1)
+        simplices[t += 1, :] .= (a, b, d)
+        simplices[t += 1, :] .= (a, d, c)
     end
-        
-    let index_x = coords_x .> L
-        coords_q_[index_x] .-= L
-        coords_x_[index_x] .-= L
-    end
-    return coords_q_, coords_x_
+    return simplices
 end
 
 """
-    frame(coords_q, coords_x, L, pad=0.05)
+    unwrap_triangle(x, sim, L)
 
-Cosmological N-body simulations normally work with periodic boundary conditions. This function adds a frame of periodic particle positions around the simulation box to implement periodicity in the Delaunay tesselation.
-`pad` specifies the width of the frame in units of the simulation box size `L`.
+Eulerian corners of the triangle with particle indices `sim` (rows of x). The second and third corners are placed at the
+periodic image nearest to the first corner, and the first corner is shifted into [0, L)². This only assumes that the
+edges of the triangle are shorter than L/2, so particles may have wrapped around the box any number of times.
 """
-function frame(coords_q, coords_x, L, pad=0.05)
-    for d in 1:size(coords_q,2)
-        indexL = coords_x[:,d] .> (1. - pad) * L
-        indexR = coords_x[:,d] .< pad * L
-
-        newPointsL_q = coords_q[indexL, :]
-        newPointsL_x = coords_x[indexL, :]
-        newPointsL_q[:,d] .-= L 
-        newPointsL_x[:,d] .-= L 
-        
-        newPointsR_q = coords_q[indexR, :]
-        newPointsR_x = coords_x[indexR, :]
-        newPointsR_q[:,d] .+= L 
-        newPointsR_x[:,d] .+= L 
-
-        coords_q = vcat(coords_q, newPointsL_q)        
-        coords_q = vcat(coords_q, newPointsR_q)
-        coords_x = vcat(coords_x, newPointsL_x)        
-        coords_x = vcat(coords_x, newPointsR_x)
+function unwrap_triangle(x, sim, L)
+    corners = Matrix{Float64}(undef, 3, 2)
+    @inbounds for d in 1:2
+        x1 = x[sim[1], d]
+        shift = fld(x1, L) * L
+        corners[1, d] = x1 - shift
+        for k in 2:3
+            corners[k, d] = x1 + unwrap_s(x[sim[k], d] - x1, L) - shift
+        end
     end
-
-    return coords_q, coords_x
+    return corners
 end
 
 """
-    frame_velocities(coords_x, velocities, L, pad=0.05)
+    PS_DTFE(state_initial, state_final, depth, box)
 
-Cosmological N-body simulations normally work with periodic boundary conditions. This function adds a frame of velocities (corresponding to the periodic particle positions) around the simulation box to implement periodicity in the Delaunay tesselation.
-`pad` specifies the width of the frame in units of the simulation box size `L`.
+Phase-space Delaunay tessellation field estimator. The particles are connected by the regular triangulation of their
+Lagrangian lattice (`lattice_triangles`), every triangle is unwrapped across the periodic boundaries on its own
+(`unwrap_triangle`), and triangles crossing the edge of the box are stored together with their periodic copies.
+Query points are taken modulo the box. A point lying exactly on an edge or vertex of the tessellation is counted in
+every triangle that contains it.
 """
-function frame_velocities(coords_x, velocities, L, pad=0.05)
-    for d in 1:size(coords_x,2)
-        indexL = coords_x[:,d] .> (1. - pad) * L
-        indexR = coords_x[:,d] .< pad * L
+struct PS_DTFE
+    rho::Vector{Float64}            # density at the particles
+    Drho::Matrix{Float64}           # density gradient on every triangle
+    Dv::Array{Float64, 3}           # velocity gradient on every triangle
+    tree::BVH
+    simplices::Matrix{Int}          # particle indices of every triangle (periodic copies included)
+    corners::Matrix{Int}            # rows of `positions` holding the corners of every triangle
+    positions::Matrix{Float64}      # Eulerian corners, three rows per triangle
+    velocities::Matrix{Float64}     # velocities of the particles
+    positions_initial::Matrix{Float64}
+    L::Float64
 
-        newVelocitiesL = velocities[indexL, :]
-        newPointsL_x   = coords_x[indexL, :]
-        newPointsL_x[:,d] .-= L 
-        
-        newVelocitiesR = velocities[indexR, :]
-        newPointsR_x   = coords_x[indexR, :]
-        newPointsR_x[:,d] .+= L 
+    function PS_DTFE(state_initial, state_final, depth, box)
+        L, m, dim = box.L, box.m, 2
+        n = size(state_final.position, 1)
+        size(state_final.position, 2) == n || throw(ArgumentError("PS_DTFE expects the particles on an n×n Lagrangian lattice"))
+        x = reshape(state_final.position, :, 2)
+        velocities = reshape(state_final.momentum, :, 2)
+        triangles = lattice_triangles(n)
+        tri_corners = [unwrap_triangle(x, @view(triangles[t, :]), L) for t in axes(triangles, 1)]
 
-        coords_x = vcat(coords_x, newPointsL_x)        
-        coords_x = vcat(coords_x, newPointsR_x)
-        velocities = vcat(velocities,  newVelocitiesL)        
-        velocities = vcat(velocities,  newVelocitiesR)        
+        rho = zeros(size(x, 1))
+        @inbounds for t in axes(triangles, 1)
+            vol = volume(1:3, tri_corners[t])
+            for index in @view(triangles[t, :])
+                rho[index] += vol
+            end
+        end
+        rho = (1. + dim) * m ./ rho
+
+        Drho = zeros(size(triangles, 1), dim)
+        Dv   = zeros(size(triangles, 1), dim, dim)
+        @inbounds for t in axes(triangles, 1)
+            sim = @view(triangles[t, :])
+            p = tri_corners[t]
+            A = @view(p[2:end, :])' .- @view(p[1, :])
+            det(A) == 0 && continue
+            A_inv = inv(A)'
+            Drho[t, :] = A_inv * (rho[sim[2:end]] .- rho[sim[1]])
+            Dv[t, :, :] = A_inv * ((velocities[sim[2:end], :]' .- velocities[sim[1], :])')
+        end
+
+        # Keep every triangle at the image of its first corner, plus the periodic copies that overlap the box
+        rows = Int[]; positions = Matrix{Float64}[]
+        for t in axes(triangles, 1), sx in (-L, 0., L), sy in (-L, 0., L)
+            c = tri_corners[t] .+ [sx sy]
+            if maximum(@view(c[:, 1])) >= 0 && minimum(@view(c[:, 1])) <= L && maximum(@view(c[:, 2])) >= 0 && minimum(@view(c[:, 2])) <= L
+                push!(rows, t); push!(positions, c)
+            end
+        end
+        positions = reduce(vcat, positions)
+        corners = permutedims(reshape(collect(1:size(positions, 1)), 3, :))
+
+        BVH_tree = BVH(1:length(rows), [0 L; 0 L], positions, corners, depth * dim)
+        return new(rho, Drho[rows, :], Dv[rows, :, :], BVH_tree, triangles[rows, :], corners, positions, velocities,
+                   reshape(state_initial.position, :, 2), L)
     end
+end
 
-    return velocities
+"Triangles containing the point p (taken modulo the box)."
+streams(p, estimator::PS_DTFE) = findIntersections(mod.(p, estimator.L), estimator.tree, estimator.positions, estimator.corners)
+
+"Density, linearly interpolated on triangle s at the point p."
+function stream_density(p, s, estimator::PS_DTFE)
+    @inbounds return estimator.rho[estimator.simplices[s, 1]] +
+        @view(estimator.Drho[s, :])' * (p .- @view(estimator.positions[estimator.corners[s, 1], :]))
+end
+
+"Velocity, linearly interpolated on triangle s at the point p."
+function stream_velocity(p, s, estimator::PS_DTFE)
+    @inbounds return @view(estimator.velocities[estimator.simplices[s, 1], :]) +
+        @view(estimator.Dv[s, :, :])' * (p .- @view(estimator.positions[estimator.corners[s, 1], :]))
+end
+
+function ps_density(p::Vector{Float64}, estimator::PS_DTFE)
+    p = mod.(p, estimator.L)
+    return sum((stream_density(p, s, estimator) for s in streams(p, estimator)), init = 0.)
+end
+
+function ps_velocity(p::Vector{Float64}, estimator::PS_DTFE)
+    p = mod.(p, estimator.L)
+    simplexIndices = streams(p, estimator)
+    vs = zeros(length(simplexIndices), length(p))
+    for (i, s) in pairs(simplexIndices)
+        vs[i, :] = stream_velocity(p, s, estimator)
+    end
+    return vs
+end
+
+numberOfStreams(p::Vector{Float64}, estimator::PS_DTFE) = length(streams(p, estimator))
+
+function velocitySum(p::Vector{Float64}, estimator::PS_DTFE)
+    vs = ps_velocity(p, estimator)
+    size(vs, 1) == 1 && return vs   # single-stream region
+
+    # stream-density weighted sum of velocities in a multistream region
+    p = mod.(p, estimator.L)
+    densities = [stream_density(p, s, estimator) for s in streams(p, estimator)]
+    return sum(densities .* vs, dims=1) / sum(densities)
 end

@@ -3,7 +3,7 @@
 """
 module Nbody2D
     using QuadGK, FFTW, Random, SpecialFunctions
-    using LinearAlgebra, DelaunayTriangulation
+    using LinearAlgebra
     using Plots
     using Interpolations
 
