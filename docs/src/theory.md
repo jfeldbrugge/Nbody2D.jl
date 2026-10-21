@@ -253,7 +253,7 @@ In these equations, the time dependence enters through the evolution of the scal
 \end{align*}
 ```
 
-This formalism saves us from having to solve the Friedmann equation. In this package, we solve this set of equations with a first-order Leap-Frog method, consisting of a drift and a kick operation.
+This formalism saves us from having to solve the Friedmann equation. In this package, we solve this set of equations with a second-order Leap-Frog method, alternating drift and kick operations. The positions are evaluated at integer steps $a_n = a_i + n\,\delta a$ and the momenta at the half steps $a_n + \delta a/2$; the initial momenta are taken from the growing mode of the Zel'dovich approximation.
 
 ## Density estimation
 This package includes a two-dimensional implementation of the Phase-Space Delaunay Tessellation Field Estimator (PS-DTFE) for the estimation of the density, the velocity and the number of streams fields. The method traces the dark matter sheet in phase-space and evaluates the density and velocity fields by linearly interpolating in the simplices spanning the dark matter sheet. For example, the PS-DTFE method approximates the density formula
@@ -262,4 +262,4 @@ This package includes a two-dimensional implementation of the Phase-Space Delaun
 \rho(\bm{x}) = \sum_{\bm{q} \in \bm{x}_t^{-1}(\bm{x})} \frac{\bar{\rho}}{|\det \nabla \bm{x}_t(\bm{q})|}\,,
 ```
 
-using the $N$-body particles. For a detailed description, see the package [PhaseSpaceDTFE.jl](https://jfeldbrugge.github.io/PhaseSpaceDTFE.jl/stable/theory/), which implements the PS-DTFE method in 3D.
+using the $N$-body particles. The dark matter sheet is represented by the regular triangulation of the Lagrangian lattice, in which every lattice cell is split along the same diagonal, so that every particle is a vertex of six triangles. Each triangle is unwrapped across the periodic boundaries on its own, which allows particles to travel around the box any number of times, as long as the edges of the triangles remain shorter than half the box size. For a detailed description, see the package [PhaseSpaceDTFE.jl](https://jfeldbrugge.github.io/PhaseSpaceDTFE.jl/stable/theory/), which implements the PS-DTFE method in 3D.
